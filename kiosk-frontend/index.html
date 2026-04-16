@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Borne d'accueil intelligente CareTrack — Enregistrez-vous rapidement pour votre consultation" />
+  <title>CareTrack — Borne d'Accueil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/kiosk.css" />
+</head>
+<body>
+  <!-- Fond animé -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Barre supérieure -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo">
+        <div class="logo-icon">🏥</div>
+        <div class="logo-text">
+          <span class="logo-name">CareTrack</span>
+          <span class="logo-sub">L'Hôpital Intelligent</span>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div id="clock" class="clock"></div>
+      <div id="date-display" class="date-display"></div>
+    </div>
+  </header>
+
+  <!-- Conteneur principal des écrans -->
+  <main id="app">
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN 1 : ACCUEIL                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-welcome" class="screen active">
+      <div class="welcome-content">
+        <div class="welcome-hero">
+          <div class="pulse-ring"></div>
+          <div class="welcome-icon">🏥</div>
+        </div>
+        <h1 class="welcome-title">Bienvenue à CareTrack</h1>
+        <p class="welcome-subtitle">Sélectionnez votre situation pour commencer</p>
+
+        <div class="welcome-cards">
+          <button id="btn-has-card" class="welcome-card card-primary" onclick="App.goTo('rfid-scan')">
+            <div class="card-icon">💳</div>
+            <div class="card-body">
+              <h2>J'ai ma carte patient</h2>
+              <p>Identification rapide par carte RFID et code PIN</p>
+            </div>
+            <div class="card-arrow">→</div>
+          </button>
+
+          <button id="btn-no-card" class="welcome-card card-secondary" onclick="App.goTo('guest-flow')">
+            <div class="card-icon">👤</div>
+            <div class="card-body">
+              <h2>Je suis nouveau / Sans carte</h2>
+              <p>Prise en charge rapide sans dossier requis</p>
+            </div>
+            <div class="card-arrow">→</div>
+          </button>
+        </div>
+
+        <p class="welcome-help">Besoin d'aide ? Adressez-vous à l'accueil.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN 2 : SCAN RFID                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-rfid-scan" class="screen">
+      <div class="screen-inner">
+        <button class="back-btn" onclick="App.goTo('welcome')">← Retour</button>
+        <div class="step-indicator">
+          <span class="step active">1</span>
+          <span class="step-line"></span>
+          <span class="step">2</span>
+          <span class="step-line"></span>
+          <span class="step">3</span>
+          <span class="step-line"></span>
+          <span class="step">4</span>
+        </div>
+
+        <div class="rfid-zone">
+          <div class="nfc-animation">
+            <div class="nfc-ring nfc-ring-1"></div>
+            <div class="nfc-ring nfc-ring-2"></div>
+            <div class="nfc-ring nfc-ring-3"></div>
+            <div class="nfc-icon">📶</div>
+          </div>
+          <h2 class="rfid-title">Approchez votre carte du lecteur</h2>
+          <p class="rfid-subtitle">Placez la carte dans la zone de lecture ci-dessus</p>
+
+          <!-- Champ caché pour simuler le lecteur RFID (en prod, le lecteur envoie ici) -->
+          <div class="rfid-manual">
+            <p class="rfid-manual-label">— ou saisir manuellement (test) —</p>
+            <div class="rfid-input-row">
+              <input
+                id="rfid-input"
+                type="text"
+                class="rfid-input"
+                placeholder="N° carte (ex: PAT9660)"
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+              />
+              <button class="rfid-submit-btn" onclick="RfidScreen.submit()">Valider</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="rfid-error" class="error-msg hidden"></div>
+
+        <div class="timeout-bar-wrap">
+          <div id="rfid-timeout-bar" class="timeout-bar"></div>
+          <span id="rfid-timeout-text" class="timeout-text">Retour automatique dans 60s</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN 3 : SAISIE CODE PIN                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-pin-entry" class="screen">
+      <div class="screen-inner">
+        <button class="back-btn" onclick="App.goTo('rfid-scan')">← Retour</button>
+        <div class="step-indicator">
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step active">2</span>
+          <span class="step-line"></span>
+          <span class="step">3</span>
+          <span class="step-line"></span>
+          <span class="step">4</span>
+        </div>
+
+        <div class="pin-zone">
+          <div class="pin-hello">Bonjour, <span id="pin-prenom">Patient</span> 👋</div>
+          <h2 class="pin-title">Entrez votre code PIN</h2>
+          <div class="pin-dots" id="pin-dots">
+            <div class="pin-dot" data-pos="0"></div>
+            <div class="pin-dot" data-pos="1"></div>
+            <div class="pin-dot" data-pos="2"></div>
+            <div class="pin-dot" data-pos="3"></div>
+          </div>
+
+          <div id="pin-error" class="pin-error hidden"></div>
+          <div id="pin-attempts" class="pin-attempts hidden"></div>
+
+          <!-- Clavier numérique tactile -->
+          <div class="numpad">
+            <button class="numpad-key" data-digit="1" onclick="PinScreen.addDigit('1')">1</button>
+            <button class="numpad-key" data-digit="2" onclick="PinScreen.addDigit('2')">2</button>
+            <button class="numpad-key" data-digit="3" onclick="PinScreen.addDigit('3')">3</button>
+            <button class="numpad-key" data-digit="4" onclick="PinScreen.addDigit('4')">4</button>
+            <button class="numpad-key" data-digit="5" onclick="PinScreen.addDigit('5')">5</button>
+            <button class="numpad-key" data-digit="6" onclick="PinScreen.addDigit('6')">6</button>
+            <button class="numpad-key" data-digit="7" onclick="PinScreen.addDigit('7')">7</button>
+            <button class="numpad-key" data-digit="8" onclick="PinScreen.addDigit('8')">8</button>
+            <button class="numpad-key" data-digit="9" onclick="PinScreen.addDigit('9')">9</button>
+            <button class="numpad-key numpad-clear" onclick="PinScreen.clear()">⌫</button>
+            <button class="numpad-key" data-digit="0" onclick="PinScreen.addDigit('0')">0</button>
+            <button class="numpad-key numpad-ok" onclick="PinScreen.confirm()" id="pin-ok-btn">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN 4 : CONFIRMATION PATIENT                                 -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-patient-confirm" class="screen">
+      <div class="screen-inner">
+        <button class="back-btn" onclick="App.back()">← Retour</button>
+        <div class="step-indicator">
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step active">3</span>
+          <span class="step-line"></span>
+          <span class="step">4</span>
+        </div>
+
+        <div class="confirm-zone">
+          <h2 class="confirm-title">Est-ce bien vous ?</h2>
+
+          <div class="patient-card" id="patient-card-display">
+            <div class="patient-photo-wrap">
+              <img id="patient-photo" src="" alt="Photo patient" class="patient-photo hidden" />
+              <div id="patient-avatar" class="patient-avatar">👤</div>
+            </div>
+            <div class="patient-info">
+              <div class="patient-name" id="patient-name">—</div>
+              <div class="patient-meta" id="patient-meta">—</div>
+              <div class="patient-details">
+                <span class="patient-badge" id="patient-blood">—</span>
+                <span class="patient-badge patient-badge-secondary" id="patient-allergies">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="confirm-actions">
+            <button id="btn-confirm-yes" class="btn-confirm-yes" onclick="ConfirmScreen.yes()">
+              ✓ Oui, c'est moi
+            </button>
+            <button id="btn-confirm-no" class="btn-confirm-no" onclick="App.goTo('welcome')">
+              ✗ Ce n'est pas moi
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN 5 : SÉLECTION SERVICE (commun patient + visiteur)        -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-service-select" class="screen">
+      <div class="screen-inner">
+        <button class="back-btn" onclick="App.back()">← Retour</button>
+        <div class="step-indicator" id="service-step-indicator">
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step active">4</span>
+        </div>
+
+        <h2 class="service-title">Quel service souhaitez-vous ?</h2>
+        <p class="service-subtitle">Sélectionnez le type de consultation</p>
+
+        <div id="services-grid" class="services-grid">
+          <div class="service-loading">
+            <div class="spinner"></div>
+            <p>Chargement des services...</p>
+          </div>
+        </div>
+
+        <div id="service-error" class="error-msg hidden"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN 6 : FLUX VISITEUR                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-guest-flow" class="screen">
+      <div class="screen-inner">
+        <button class="back-btn" onclick="App.goTo('welcome')">← Retour</button>
+
+        <div class="guest-zone">
+          <div class="guest-icon">👤</div>
+          <h2 class="guest-title">Prise en charge rapide</h2>
+          <p class="guest-subtitle">
+            Vous serez orienté vers un médecin disponible.<br/>
+            Aucun dossier ne sera créé.
+          </p>
+
+          <div class="guest-motif-section">
+            <label class="guest-label">Sélectionnez le type de consultation <span class="optional">(optionnel)</span></label>
+            <div id="motif-options" class="motif-options">
+              <div class="service-loading" style="padding:20px;">
+                <div class="spinner"></div>
+                <p>Chargement...</p>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-primary btn-xl" onclick="GuestScreen.proceed()">
+            Continuer vers la sélection du service →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN 7 : TICKET DE PASSAGE                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-ticket" class="screen">
+      <div class="screen-inner ticket-screen-inner">
+        <div class="ticket-success-icon">✅</div>
+        <h2 class="ticket-heading">Votre ticket de passage</h2>
+
+        <div class="ticket-card" id="ticket-card">
+          <div class="ticket-header">
+            <div class="ticket-hospital">🏥 CareTrack</div>
+            <div class="ticket-date-time" id="ticket-datetime"></div>
+          </div>
+
+          <div class="ticket-number-wrap">
+            <div class="ticket-number-label">Votre numéro</div>
+            <div class="ticket-number" id="ticket-number">—</div>
+            <div class="ticket-position" id="ticket-position">Vous êtes le N°<span>1</span> en attente</div>
+          </div>
+
+          <div class="ticket-divider">✂ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+
+          <div class="ticket-details">
+            <div class="ticket-detail-row">
+              <span class="ticket-detail-icon">🩺</span>
+              <div>
+                <span class="ticket-detail-label">Service</span>
+                <span class="ticket-detail-value" id="ticket-service">—</span>
+              </div>
+            </div>
+            <div class="ticket-detail-row">
+              <span class="ticket-detail-icon">👨‍⚕️</span>
+              <div>
+                <span class="ticket-detail-label">Médecin</span>
+                <span class="ticket-detail-value" id="ticket-medecin">—</span>
+              </div>
+            </div>
+            <div class="ticket-detail-row" id="ticket-salle-row">
+              <span class="ticket-detail-icon">🚪</span>
+              <div>
+                <span class="ticket-detail-label">Salle</span>
+                <span class="ticket-detail-value" id="ticket-salle">—</span>
+              </div>
+            </div>
+            <div class="ticket-detail-row">
+              <span class="ticket-detail-icon">⏰</span>
+              <div>
+                <span class="ticket-detail-label">Heure estimée</span>
+                <span class="ticket-detail-value" id="ticket-heure">—</span>
+              </div>
+            </div>
+            <div class="ticket-detail-row">
+              <span class="ticket-detail-icon">💰</span>
+              <div>
+                <span class="ticket-detail-label">Tarif</span>
+                <span class="ticket-detail-value" id="ticket-tarif">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ticket-footer">
+            <p>Merci de vous installer en salle d'attente.</p>
+            <p>Un soignant vous appellera par votre numéro.</p>
+          </div>
+        </div>
+
+        <div class="ticket-actions">
+          <button class="btn-print" onclick="window.print()">🖨️ Imprimer le ticket</button>
+          <button class="btn-new-session" onclick="App.goTo('welcome')">🏠 Nouvelle session</button>
+          <div class="ticket-countdown">
+            Retour à l'accueil dans <span id="ticket-countdown">60</span>s
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN CHARGEMENT (overlay)                                     -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-loading" class="screen-overlay hidden">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p id="loading-message">Traitement en cours...</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bouton Annuler Global (visible sur tous les écrans sauf accueil et ticket) -->
+  <button id="global-cancel-btn" class="global-cancel-btn hidden" onclick="App.cancel()">✕ Annuler</button>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/screens/rfid.js"></script>
+  <script src="js/screens/pin.js"></script>
+  <script src="js/screens/confirm.js"></script>
+  <script src="js/screens/services.js"></script>
+  <script src="js/screens/guest.js"></script>
+  <script src="js/screens/ticket.js"></script>
+  <script>
+    // Démarrage de l'application
+    document.addEventListener('DOMContentLoaded', () => App.init());
+  </script>
+</body>
+</html>
