@@ -10,6 +10,7 @@ const App = {
     serviceChoisi: null,  // Service sélectionné
     servicePreselectionne: null, // Service pré-sélectionné via le motif
     ticket: null,         // Ticket retourné par l'API
+    rdvChoisi: null,      // RDV web selectionné
   },
 
   // Écran courant
@@ -75,6 +76,12 @@ const App = {
     if (screenName === 'service-select') {
       ServicesScreen.onEnter();
     }
+    if (screenName === 'appointments') {
+      AppointmentsScreen.onEnter();
+    }
+    if (screenName === 'payment') {
+      PaymentScreen.onEnter();
+    }
     if (screenName === 'ticket') {
       TicketScreen.onEnter();
     }
@@ -108,7 +115,7 @@ const App = {
   resetState() {
     this.state = {
       rfid: null, patient: null, estVisiteur: false,
-      motif: null, serviceChoisi: null, servicePreselectionne: null, ticket: null,
+      motif: null, serviceChoisi: null, servicePreselectionne: null, ticket: null, rdvChoisi: null,
     };
   },
 

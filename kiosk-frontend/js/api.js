@@ -37,8 +37,18 @@ const Api = {
     return this.get('/services');
   },
 
-  /** Enregistrer la consultation (checkin) */
+  /** Récupérer les RDV du jour pour un patient */
+  getAppointments(patientId) {
+    return this.get(`/appointments/${patientId}`);
+  },
+
+  /** Enregistrer la consultation (checkin patient ou visiteur payé) */
   checkin(data) {
     return this.post('/checkin', data);
+  },
+
+  /** Générer un ticket de caisse (pour payer) */
+  cashierTicket(data) {
+    return this.post('/cashier-ticket', data);
   },
 };

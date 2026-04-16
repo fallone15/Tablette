@@ -55,6 +55,6 @@ const ConfirmScreen = {
 
   yes() {
     App.state.estVisiteur = false;
-    App.goTo('service-select');
+    App.goTo('appointments');
   },
 };

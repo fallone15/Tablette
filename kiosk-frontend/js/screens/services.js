@@ -89,37 +89,7 @@ const ServicesScreen = {
 
   async select(service) {
     App.state.serviceChoisi = service;
-    App.showLoading('Enregistrement de votre passage...');
-
-    try {
-      const payload = {
-        id_service: service.id_service,
-        motif: App.state.motif || null,
-        est_visiteur: App.state.estVisiteur,
-      };
-
-      // Si patient identifié, ajouter son id
-      if (App.state.patient && !App.state.estVisiteur) {
-        payload.id_patient = App.state.patient.id_patient;
-      }
-
-      const data = await Api.checkin(payload);
-
-      if (data.success) {
-        App.state.ticket = data.ticket;
-        App.hideLoading();
-        App.goTo('ticket');
-      } else {
-        throw new Error('Échec du checkin');
-      }
-    } catch (err) {
-      App.hideLoading();
-      if (err.code === 'NO_DOCTOR_AVAILABLE') {
-        App.showError('service-error',
-          'Aucun médecin disponible pour ce service en ce moment. Veuillez choisir un autre service ou vous adresser à l\'accueil.');
-      } else {
-        App.showError('service-error', err.error || 'Erreur lors de l\'enregistrement. Veuillez réessayer.');
-      }
-    }
+    // Les passages spontanés doivent également être payés
+    App.goTo('payment');
   },
 };

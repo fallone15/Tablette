@@ -221,6 +221,70 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN 4.5 : RENDEZ-VOUS DU JOUR (Patient existant)             -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-appointments" class="screen">
+      <div class="screen-inner">
+        <button class="back-btn" onclick="App.back()">← Retour</button>
+        <div class="step-indicator">
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step active">RDV</span>
+          <span class="step-line"></span>
+          <span class="step">4</span>
+        </div>
+
+        <h2 class="service-title">Vous avez un rendez-vous aujourd'hui</h2>
+        <p class="service-subtitle">Confirmez votre passage pour l'un des rendez-vous ci-dessous :</p>
+
+        <div id="appointments-list" class="appointments-list" style="width:100%;max-width:700px;display:flex;flex-direction:column;gap:16px;">
+          <!-- Injecté dynamiquement -->
+        </div>
+
+        <button class="btn-secondary btn-xl" onclick="AppointmentsScreen.skip()" style="margin-top:20px; background:var(--bg-card); border: 1px solid var(--border); color:var(--text-secondary);">
+          Prendre un ticket pour un autre motif
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN 5.5 : PAIEMENT (Si pas de RDV prépayé)                   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-payment" class="screen">
+      <div class="screen-inner">
+        <button class="back-btn" onclick="App.back()">← Retour</button>
+        <div class="step-indicator">
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step active">$</span>
+        </div>
+
+        <div class="payment-zone" style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:700px;gap:20px;">
+          <h2 class="guest-title" style="margin-bottom:0;">Comment souhaitez-vous régler ?</h2>
+          <p class="guest-subtitle" style="margin-top:0;">
+            Montant de la consultation : <strong id="payment-amount" style="color:var(--primary);font-size:24px;">— MAD</strong>
+          </p>
+          <div style="display:flex;gap:20px;width:100%;margin-top:20px;">
+            <button class="btn-primary" style="flex:1;min-height:140px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;" onclick="PaymentScreen.payCB()">
+              <span style="font-size:40px;">💳</span>
+              Carte Bancaire<br><span style="font-size:13px;font-weight:400;">(Sur cette borne)</span>
+            </button>
+            <button class="btn-secondary" style="flex:1;min-height:140px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;background:var(--bg-card);border:2px solid var(--warning);color:#fff;cursor:pointer;border-radius:var(--radius-md);" onclick="PaymentScreen.payCash()">
+              <span style="font-size:40px;">💵</span>
+              Espèces<br><span style="font-size:13px;font-weight:400;color:var(--text-secondary);">(Ticket pour la caissière)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
     <!-- ÉCRAN 5 : SÉLECTION SERVICE (commun patient + visiteur)        -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div id="screen-service-select" class="screen">
@@ -296,10 +360,14 @@
             <div class="ticket-date-time" id="ticket-datetime"></div>
           </div>
 
-          <div class="ticket-number-wrap">
-            <div class="ticket-number-label">Votre numéro</div>
+          <div class="ticket-number-wrap" id="ticket-number-wrap">
+            <div class="ticket-number-label" id="ticket-type-label">Votre numéro</div>
             <div class="ticket-number" id="ticket-number">—</div>
             <div class="ticket-position" id="ticket-position">Vous êtes le N°<span>1</span> en attente</div>
+          </div>
+
+          <div id="ticket-payment-alert" class="hidden" style="background:rgba(231,76,60,0.1); border:2px dashed var(--danger); color:var(--danger); padding:15px; margin: 15px 20px; border-radius:var(--radius-md); text-align:center; font-weight:700; font-size:18px;">
+            ⚠️ Veuillez régler la consultation à la caisse (Accueil) avant de patienter.
           </div>
 
           <div class="ticket-divider">✂ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
@@ -312,7 +380,7 @@
                 <span class="ticket-detail-value" id="ticket-service">—</span>
               </div>
             </div>
-            <div class="ticket-detail-row">
+            <div class="ticket-detail-row" id="ticket-medecin-row">
               <span class="ticket-detail-icon">👨‍⚕️</span>
               <div>
                 <span class="ticket-detail-label">Médecin</span>
@@ -326,7 +394,7 @@
                 <span class="ticket-detail-value" id="ticket-salle">—</span>
               </div>
             </div>
-            <div class="ticket-detail-row">
+            <div class="ticket-detail-row" id="ticket-heure-row">
               <span class="ticket-detail-icon">⏰</span>
               <div>
                 <span class="ticket-detail-label">Heure estimée</span>
@@ -342,9 +410,9 @@
             </div>
           </div>
 
-          <div class="ticket-footer">
-            <p>Merci de vous installer en salle d'attente.</p>
-            <p>Un soignant vous appellera par votre numéro.</p>
+          <div class="ticket-footer" id="ticket-footer">
+            <p id="ticket-footer-msg1">Merci de vous installer en salle d'attente.</p>
+            <p id="ticket-footer-msg2">Un soignant vous appellera par votre numéro.</p>
           </div>
         </div>
 
@@ -379,8 +447,10 @@
   <script src="js/screens/rfid.js"></script>
   <script src="js/screens/pin.js"></script>
   <script src="js/screens/confirm.js"></script>
+  <script src="js/screens/appointments.js"></script>
   <script src="js/screens/services.js"></script>
   <script src="js/screens/guest.js"></script>
+  <script src="js/screens/payment.js"></script>
   <script src="js/screens/ticket.js"></script>
   <script>
     // Démarrage de l'application
