@@ -134,6 +134,51 @@ const App = {
     document.getElementById('screen-loading').classList.add('hidden');
   },
 
+  // Afficher un pop-up modal
+  showPopup(message, title = ' Oops!!') {
+    const popup = document.createElement('div');
+    popup.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    `;
+
+    popup.innerHTML = `
+      <div style="
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        text-align: center;
+      ">
+        <h2 style="margin-top: 0; margin-bottom: 20px; font-size: 24px; color: #f06d10;">${title}</h2>
+        <p style="margin: 20px 0; font-size: 16px; color: #333; line-height: 1.5;">${message}</p>
+        <button onclick="this.closest('div').parentElement.remove()" style="
+          margin-top: 20px;
+          padding: 12px 30px;
+          background: #101011;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+        ">OK</button>
+      </div>
+    `;
+
+    document.body.appendChild(popup);
+  },
+
   // Afficher une erreur (helper)
   showError(elementId, message) {
     const el = document.getElementById(elementId);

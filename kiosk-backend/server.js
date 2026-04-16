@@ -48,10 +48,12 @@ app.use((req, res, next) => {
 const authRoutes = require('./routes/auth');
 const servicesRoutes = require('./routes/services');
 const kioskRoutes = require('./routes/kiosk');
+const paymentRoutes = require('./routes/payment');
 
 app.use('/api/kiosk', authRoutes);
 app.use('/api/kiosk', servicesRoutes);
 app.use('/api/kiosk', kioskRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

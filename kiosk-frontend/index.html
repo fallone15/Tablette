@@ -442,6 +442,7 @@
   <button id="global-cancel-btn" class="global-cancel-btn hidden" onclick="App.cancel()">✕ Annuler</button>
 
   <!-- Scripts -->
+  <script src="https://js.stripe.com/v3/"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script src="js/screens/rfid.js"></script>
@@ -453,6 +454,9 @@
   <script src="js/screens/payment.js"></script>
   <script src="js/screens/ticket.js"></script>
   <script>
+    // Configuration Stripe
+    const stripe = Stripe('pk_test_51TJcrfFLNDdgKlq0Jx7X9JC3yJdYBB1fDzf0yUb048vGMGSZzJqXCVriVRWobvTd8WCzy0sKyxUkstl18ahZ8RQ200tnKDWmNz');
+    
     // Démarrage de l'application
     document.addEventListener('DOMContentLoaded', () => App.init());
   </script>

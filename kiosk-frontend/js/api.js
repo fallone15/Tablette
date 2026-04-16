@@ -1,11 +1,12 @@
 /* ─── api.js — Couche d'appel HTTP vers le backend kiosk ─── */
 
 const API_BASE = 'http://localhost:3001/api/kiosk';
+const API_PAYMENT = 'http://localhost:3001/api/payment';
 
 const Api = {
 
-  async post(endpoint, data) {
-    const res = await fetch(`${API_BASE}${endpoint}`, {
+  async post(endpoint, data, baseUrl = API_BASE) {
+    const res = await fetch(`${baseUrl}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -42,6 +43,11 @@ const Api = {
     return this.get(`/appointments/${patientId}`);
   },
 
+  /** Vérifier la disponibilité des médecins pour un service */
+  checkDoctorAvailability(id_service) {
+    return this.get(`/check-doctor-availability/${id_service}`);
+  },
+
   /** Enregistrer la consultation (checkin patient ou visiteur payé) */
   checkin(data) {
     return this.post('/checkin', data);
@@ -50,5 +56,16 @@ const Api = {
   /** Générer un ticket de caisse (pour payer) */
   cashierTicket(data) {
     return this.post('/cashier-ticket', data);
+  },
+
+  // ─── Paiement Stripe ───────────────────────────────────────────────────
+  /** Créer une PaymentIntent Stripe */
+  createPaymentIntent(data) {
+    return this.post('/create-payment-intent', data, API_PAYMENT);
+  },
+
+  /** Confirmer le paiement Stripe */
+  confirmPayment(data) {
+    return this.post('/confirm', data, API_PAYMENT);
   },
 };

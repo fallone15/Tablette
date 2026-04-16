@@ -88,8 +88,24 @@ const ServicesScreen = {
   },
 
   async select(service) {
-    App.state.serviceChoisi = service;
-    // Les passages spontanés doivent également être payés
-    App.goTo('payment');
+    App.showLoading('Vérification de la disponibilité des médecins...');
+    
+    try {
+      const availRes = await Api.checkDoctorAvailability(service.id_service);
+      
+      if (!availRes.available) {
+        App.hideLoading();
+        App.showPopup('Aucun médecin disponible pour ce service aujourd\'hui');
+        return;
+      }
+      
+      App.state.serviceChoisi = service;
+      App.hideLoading();
+      App.goTo('payment');
+    } catch (err) {
+      App.hideLoading();
+      App.showPopup('Aucun médecin disponible pour ce service aujourd\'hui');
+      console.error('❌ Erreur vérification médecins:', err);
+    }
   },
 };

@@ -15,17 +15,22 @@ function generateNumeroFile(prefix = 'K-') {
 // ─── Trouver un médecin disponible pour un service ───────────────────────────
 async function findMedecinDisponible(id_service) {
   const result = await pool.query(`
-    SELECT m.id_medecin, m.nom, m.prenom, m.specialite
+    SELECT m.id_medecin, m.nom, m.prenom, m.specialite,
+           COUNT(c.id_consultation) AS consultations_en_attente
     FROM public.medecins m
+    JOIN public.disponibilites d ON m.id_medecin = d.medecin_id
+    LEFT JOIN public.consultations c ON m.id_medecin = c.id_medecin 
+      AND c.statut = 'en_attente' 
+      AND DATE(c.heure_arrivee) = CURRENT_DATE
     WHERE m.id_service = $1
-      AND m.disponible = true
       AND m.actif = true
-    ORDER BY (
-      SELECT COUNT(*) FROM public.consultations c
-      WHERE c.id_medecin = m.id_medecin
-        AND c.statut = 'en_attente'
-        AND DATE(c.heure_arrivee) = CURRENT_DATE
-    ) ASC
+      -- Vérifier le jour d'aujourd'hui (jour_semaine : 0=dimanche, 1=lundi, ..., 6=samedi)
+      AND d.jour_semaine = EXTRACT(DOW FROM NOW())
+      -- Vérifier l'horaire actuel
+      AND CURRENT_TIME >= d.heure_debut
+      AND CURRENT_TIME < d.heure_fin
+    GROUP BY m.id_medecin, m.nom, m.prenom, m.specialite
+    ORDER BY consultations_en_attente ASC
     LIMIT 1
   `, [id_service]);
 
@@ -91,6 +96,53 @@ router.get('/appointments/:id_patient', async (req, res) => {
   } catch (err) {
     console.error('Erreur fetch appointments:', err);
     res.status(500).json({ error: 'Erreur serveur.' });
+  }
+});
+
+// ─── GET /api/kiosk/check-doctor-availability/:id_service ──────────────────────
+/**
+ * Vérifie si au moins un médecin est disponible pour un service
+ * Vérifie: jour de la semaine + horaires de travail + pas en consultation
+ */
+router.get('/check-doctor-availability/:id_service', async (req, res) => {
+  const { id_service } = req.params;
+  
+  try {
+    // Récupérer le jour de la semaine actuel (0=dimanche en JS, mais PostgreSQL utilise généralement lundi=0)
+    // Vérifier avec EXTRACT(DOW FROM NOW()) : dimanche=0, lundi=1, ..., samedi=6
+    const result = await pool.query(`
+      SELECT m.id_medecin, m.nom, m.prenom, m.specialite,
+             d.heure_debut, d.heure_fin,
+             COUNT(c.id_consultation) AS consultations_en_attente
+      FROM public.medecins m
+      JOIN public.disponibilites d ON m.id_medecin = d.medecin_id
+      LEFT JOIN public.consultations c ON m.id_medecin = c.id_medecin 
+        AND c.statut = 'en_attente' 
+        AND DATE(c.heure_arrivee) = CURRENT_DATE
+      WHERE m.id_service = $1 
+        AND m.actif = true
+        -- Vérifier le jour de la semaine (EXTRACT(DOW) retourne 0=dimanche, 1=lundi, etc)
+        AND d.jour_semaine = EXTRACT(DOW FROM NOW())
+        -- Vérifier l'horaire actuel
+        AND CURRENT_TIME >= d.heure_debut
+        AND CURRENT_TIME < d.heure_fin
+      GROUP BY m.id_medecin, m.nom, m.prenom, m.specialite, d.heure_debut, d.heure_fin
+      ORDER BY m.id_medecin
+    `, [id_service]);
+
+    const available = result.rows.length > 0;
+
+    res.json({
+      success: true,
+      available: available,
+      doctors: result.rows,
+      message: available 
+        ? `${result.rows.length} médecin(s) disponible(s)` 
+        : 'Aucun médecin disponible pour ce service aujourd\'hui à cette heure'
+    });
+  } catch (err) {
+    console.error('Erreur vérification médecins:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur.' });
   }
 });
 
@@ -182,7 +234,7 @@ router.post('/checkin', async (req, res) => {
       RETURNING *
     `, [
       patient_id, id_service, medecin.id_medecin, salle ? salle.id_salle : null,
-      numeroFile, heureEstimee, final_motif, service.tarif, mode_paiement || (rdvFound ? 'EN_LIGNE' : 'CB')
+      numeroFile, heureEstimee, final_motif, service.tarif, mode_paiement || 'CB'
     ]);
     const consultation = consult.rows[0];
 
