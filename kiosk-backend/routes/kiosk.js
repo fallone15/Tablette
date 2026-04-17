@@ -26,9 +26,12 @@ async function findMedecinDisponible(id_service) {
       AND m.actif = true
       -- Vérifier le jour d'aujourd'hui (jour_semaine : 0=dimanche, 1=lundi, ..., 6=samedi)
       AND d.jour_semaine = EXTRACT(DOW FROM NOW())
-      -- Vérifier l'horaire actuel
-      AND CURRENT_TIME >= d.heure_debut
-      AND CURRENT_TIME < d.heure_fin
+      -- Vérifier l'horaire actuel (gère aussi les créneaux passant minuit)
+      AND (
+        (d.heure_debut < d.heure_fin AND CURRENT_TIME >= d.heure_debut AND CURRENT_TIME < d.heure_fin)
+        OR
+        (d.heure_debut >= d.heure_fin AND (CURRENT_TIME >= d.heure_debut OR CURRENT_TIME < d.heure_fin))
+      )
     GROUP BY m.id_medecin, m.nom, m.prenom, m.specialite
     ORDER BY consultations_en_attente ASC
     LIMIT 1
@@ -123,9 +126,12 @@ router.get('/check-doctor-availability/:id_service', async (req, res) => {
         AND m.actif = true
         -- Vérifier le jour de la semaine (EXTRACT(DOW) retourne 0=dimanche, 1=lundi, etc)
         AND d.jour_semaine = EXTRACT(DOW FROM NOW())
-        -- Vérifier l'horaire actuel
-        AND CURRENT_TIME >= d.heure_debut
-        AND CURRENT_TIME < d.heure_fin
+        -- Vérifier l'horaire actuel (gère aussi les créneaux passant minuit)
+        AND (
+          (d.heure_debut < d.heure_fin AND CURRENT_TIME >= d.heure_debut AND CURRENT_TIME < d.heure_fin)
+          OR
+          (d.heure_debut >= d.heure_fin AND (CURRENT_TIME >= d.heure_debut OR CURRENT_TIME < d.heure_fin))
+        )
       GROUP BY m.id_medecin, m.nom, m.prenom, m.specialite, d.heure_debut, d.heure_fin
       ORDER BY m.id_medecin
     `, [id_service]);

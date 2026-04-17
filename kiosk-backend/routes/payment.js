@@ -24,9 +24,12 @@ async function findMedecinDisponible(id_service) {
       AND m.actif = true
       -- Vérifier le jour d'aujourd'hui
       AND d.jour_semaine = EXTRACT(DOW FROM NOW())
-      -- Vérifier l'horaire actuel
-      AND CURRENT_TIME >= d.heure_debut
-      AND CURRENT_TIME < d.heure_fin
+      -- Vérifier l'horaire actuel (gère aussi les créneaux passant minuit)
+      AND (
+        (d.heure_debut < d.heure_fin AND CURRENT_TIME >= d.heure_debut AND CURRENT_TIME < d.heure_fin)
+        OR
+        (d.heure_debut >= d.heure_fin AND (CURRENT_TIME >= d.heure_debut OR CURRENT_TIME < d.heure_fin))
+      )
     ORDER BY m.id_medecin
     LIMIT 1
   `, [id_service]);
