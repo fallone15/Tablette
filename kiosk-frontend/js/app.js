@@ -67,6 +67,9 @@ const App = {
       this.resetState();
       this._history = [];
     }
+    if (screenName === 'catalog') {
+      if (typeof CatalogScreen !== 'undefined') CatalogScreen.onEnter();
+    }
     if (screenName === 'rfid-scan') {
       RfidScreen.onEnter();
     }

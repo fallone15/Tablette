@@ -46,7 +46,7 @@
           <div class="pulse-ring"></div>
           <div class="welcome-icon">🏥</div>
         </div>
-        <h1 class="welcome-title">Bienvenue à CareTrack</h1>
+        <h1 class="welcome-title">Bienvenue à CareTrack 😊</h1>
         <p class="welcome-subtitle">Sélectionnez votre situation pour commencer</p>
 
         <div class="welcome-cards">
@@ -70,6 +70,12 @@
         </div>
 
         <p class="welcome-help">Besoin d'aide ? Adressez-vous à l'accueil.</p>
+
+        <!-- Floating action button detached -->
+        <button onclick="App.goTo('catalog')" style="position: fixed; bottom: 40px; right: 40px; background: rgba(0, 180, 216, 0.15); border: 1px solid rgba(0, 180, 216, 0.4); padding: 16px 28px; border-radius: 50px; font-size: 16px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); backdrop-filter: blur(10px); transition: all 0.2s; z-index: 100;" onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(0, 180, 216, 0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(0, 180, 216, 0.15)';">
+          <span style="font-size: 22px;">📅</span> 
+          <span>Catalogue et Horaires</span>
+        </button>
       </div>
     </div>
 
@@ -321,16 +327,15 @@
       <div class="screen-inner">
         <button class="back-btn" onclick="App.goTo('welcome')">← Retour</button>
 
-        <div class="guest-zone">
+        <div class="guest-zone" style="max-width: 100%;">
           <div class="guest-icon">👤</div>
-          <h2 class="guest-title">Prise en charge rapide</h2>
-          <p class="guest-subtitle">
+          <h2 class="service-title" style="text-align: center; margin: 0;">Prise en charge rapide</h2>
+          <p class="service-subtitle" style="text-align: center; margin-bottom: 20px;">
             Vous serez orienté vers un médecin disponible.<br/>
             Aucun dossier ne sera créé.
           </p>
 
-          <div class="guest-motif-section">
-            <label class="guest-label">Sélectionnez le type de consultation <span class="optional">(optionnel)</span></label>
+          <div style="width: 100%;">
             <div id="motif-options" class="motif-options">
               <div class="service-loading" style="padding:20px;">
                 <div class="spinner"></div>
@@ -340,7 +345,7 @@
           </div>
 
           <button class="btn-primary btn-xl" onclick="GuestScreen.proceed()">
-            Continuer vers la sélection du service →
+            Continuer vers le paiement →
           </button>
         </div>
       </div>
@@ -427,6 +432,24 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÉCRAN CATALOGUE                                                -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="screen-catalog" class="screen">
+      <div class="screen-inner" style="max-width: 900px;">
+        <button class="back-btn" onclick="App.goTo('welcome')">← Retour</button>
+        <h2 class="service-title">Catalogue des Médecins</h2>
+        <p class="service-subtitle">Consultez nos médecins spécialisés et leurs horaires de disponibilité.</p>
+
+        <div id="catalog-container" style="margin-top: 30px; width: 100%; display: flex; flex-direction: column; gap: 20px;">
+          <div class="service-loading">
+            <div class="spinner"></div>
+            <p>Chargement du catalogue...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
     <!-- ÉCRAN CHARGEMENT (overlay)                                     -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div id="screen-loading" class="screen-overlay hidden">
@@ -453,6 +476,7 @@
   <script src="js/screens/guest.js"></script>
   <script src="js/screens/payment.js"></script>
   <script src="js/screens/ticket.js"></script>
+  <script src="js/screens/catalog.js"></script>
   <script>
     // Configuration Stripe
     const stripe = Stripe('pk_test_51TJcrfFLNDdgKlq0Jx7X9JC3yJdYBB1fDzf0yUb048vGMGSZzJqXCVriVRWobvTd8WCzy0sKyxUkstl18ahZ8RQ200tnKDWmNz');

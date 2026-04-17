@@ -39,37 +39,85 @@ const GuestScreen = {
 
   renderMotifs(services, container) {
     container.innerHTML = '';
+    // Enable the grid layout matching services.js
+    container.className = 'services-grid';
+    container.style.marginTop = '20px';
+    
+    this._services = services; // Stocker pour accès ultérieur
     services.forEach(s => {
       const icon = this._icons[s.nom] || '🏥';
       const attente = parseInt(s.personnes_en_attente) || 0;
-      const btn = document.createElement('button');
-      btn.className = 'motif-btn';
-      btn.innerHTML = `
-        <span class="motif-icon">${icon}</span>
-        <span class="motif-label">${s.nom}</span>
-        ${attente > 0
-          ? `<span class="motif-badge">${attente} en attente</span>`
-          : `<span class="motif-badge motif-badge-free">Libre</span>`
-        }
+      const tempsMin = parseInt(s.temps_attente_estime) || 0;
+      const badgeClass = attente >= 5 ? 'service-card-badge badge-busy' : 'service-card-badge';
+
+      const card = document.createElement('div');
+      card.className = 'service-card';
+      if (this._serviceId === s.id_service) {
+        card.classList.add('highlighted');
+      }
+      card.dataset.id = s.id_service;
+      card.onclick = () => this.setMotif(card, s);
+      
+      card.innerHTML = `
+        <div class="service-card-icon">${icon}</div>
+        <div class="service-card-name">${s.nom}</div>
+        <div class="service-card-desc">${s.description || ''}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="service-card-wait">⏱ ~${s.duree_moyenne} min/patient</span>
+          <span class="${badgeClass}">${attente} en attente</span>
+        </div>
+        <div class="service-card-footer">
+          <span class="service-card-tarif">${parseFloat(s.tarif).toFixed(2)} MAD</span>
+          ${tempsMin > 0
+            ? `<span class="service-card-wait">≈ ${tempsMin} min d'attente</span>`
+            : `<span class="service-card-wait" style="color:var(--success);">Pas d'attente</span>`
+          }
+        </div>
       `;
-      btn.onclick = () => this.setMotif(btn, s.nom, s.id_service);
-      container.appendChild(btn);
+      container.appendChild(card);
     });
   },
 
-  setMotif(btn, motif, serviceId = null) {
-    document.querySelectorAll('#motif-options .motif-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    this._motif = motif;
-    this._serviceId = serviceId;
+  setMotif(card, service) {
+    document.querySelectorAll('#motif-options .service-card').forEach(b => b.classList.remove('highlighted'));
+    card.classList.add('highlighted');
+    this._motif = service.nom;
+    this._serviceId = service.id_service;
+    this._serviceData = service; // Stocker les données du service
   },
 
   proceed() {
+    if (!this._serviceId) {
+      App.showPopup('Veuillez sélectionner une spécialité');
+      return;
+    }
+    
     App.state.estVisiteur = true;
     App.state.motif = this._motif || 'Visiteur borne (sans carte)';
-    // Si un service a été pré-sélectionné via le motif, l'enregistrer dans l'état
-    // pour que l'écran service-select puisse le mettre en valeur
-    App.state.servicePreselectionne = this._serviceId;
-    App.goTo('service-select');
+    App.state.serviceChoisi = this._serviceData; // Utiliser les données complètes du service
+    
+    // Directement vérifier la dispo et aller au paiement
+    App.showLoading('Vérification de la disponibilité des médecins...');
+    
+    this.checkAndProceedToPayment();
+  },
+
+  async checkAndProceedToPayment() {
+    try {
+      const availRes = await Api.checkDoctorAvailability(App.state.serviceChoisi.id_service);
+      
+      if (!availRes.available) {
+        App.hideLoading();
+        App.showPopup('Aucun médecin disponible pour ce service aujourd\'hui');
+        return;
+      }
+      
+      App.hideLoading();
+      App.goTo('payment');
+    } catch (err) {
+      App.hideLoading();
+      App.showPopup('Aucun médecin disponible pour ce service aujourd\'hui');
+      console.error('❌ Erreur vérification médecins:', err);
+    }
   },
 };

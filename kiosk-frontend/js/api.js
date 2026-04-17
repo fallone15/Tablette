@@ -43,6 +43,11 @@ const Api = {
     return this.get(`/appointments/${patientId}`);
   },
 
+  /** Récupérer le catalogue des médecins et leurs disponibilités */
+  getCatalog() {
+    return this.get('/catalog');
+  },
+
   /** Vérifier la disponibilité des médecins pour un service */
   checkDoctorAvailability(id_service) {
     return this.get(`/check-doctor-availability/${id_service}`);
