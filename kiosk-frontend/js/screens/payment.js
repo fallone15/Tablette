@@ -45,7 +45,7 @@ const PaymentScreen = {
 
   // Paiement par Carte Bancaire avec Stripe
   async payCB() {
-    App.showLoading('Initialisation du paiement...');
+    App.showLoading(App.t('payment_init'));
     
     try {
       const tarif = parseFloat(App.state.serviceChoisi.tarif || 0);
@@ -62,7 +62,7 @@ const PaymentScreen = {
 
       if (!paymentIntentRes.success) {
         App.hideLoading();
-        App.showError('payment-error', paymentIntentRes.message || 'Erreur lors de la création du paiement');
+        App.showError('payment-error', paymentIntentRes.message || App.t('error_loading'));
         return;
       }
 
@@ -77,7 +77,7 @@ const PaymentScreen = {
     } catch (err) {
       App.hideLoading();
       console.error('❌ Erreur Stripe:', err);
-      App.showError('payment-error', 'Erreur lors du paiement: ' + err.message);
+      App.showError('payment-error', App.t('error_loading') + ': ' + err.message);
     }
   },
 
@@ -106,8 +106,9 @@ const PaymentScreen = {
         width: 90%;
         max-width: 500px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        color: #333;
       ">
-        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 20px;">Détails de la Carte</h3>
+        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 20px;">${App.t('payment_card_details')}</h3>
         <div id="card-element" style="
           margin: 20px 0;
           padding: 12px;
@@ -126,7 +127,7 @@ const PaymentScreen = {
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-          ">Annuler</button>
+          ">${App.t('cancel').replace('✕ ', '')}</button>
           <button onclick="PaymentScreen.confirmPayment('${clientSecret}')" style="
             flex: 1;
             padding: 12px;
@@ -136,7 +137,7 @@ const PaymentScreen = {
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-          ">Payer</button>
+          ">${App.t('payment_pay')}</button>
         </div>
       </div>
     `;
@@ -160,7 +161,7 @@ const PaymentScreen = {
   },
 
   async confirmPayment(clientSecret) {
-    App.showLoading('Traitement du paiement...');
+    App.showLoading(App.t('payment_processing'));
 
     try {
       const { paymentIntent, error } = await stripe.confirmCardPayment(clientSecret, {
@@ -180,7 +181,6 @@ const PaymentScreen = {
       }
 
       if (paymentIntent.status === 'succeeded') {
-        // Confirmer le paiement auprès du serveur
         const confirmRes = await Api.confirmPayment({
           paymentIntentId: this.paymentIntentId,
           id_patient: App.state.patient ? App.state.patient.id_patient : null,
@@ -194,21 +194,20 @@ const PaymentScreen = {
           App.state.ticket = confirmRes.ticket;
           App.state.ticket.paiement = 'stripe';
           
-          // Fermer la modale
           const modal = document.getElementById('stripe-modal');
           if (modal) modal.remove();
           
           App.hideLoading();
           App.goTo('ticket');
         } else {
-          throw new Error(confirmRes.message || 'Erreur de confirmation');
+          throw new Error(confirmRes.message || App.t('error_loading'));
         }
       }
     } catch (err) {
       App.hideLoading();
       const displayError = document.getElementById('card-errors');
       if (displayError) {
-        displayError.textContent = 'Erreur: ' + err.message;
+        displayError.textContent = App.t('error_loading') + ': ' + err.message;
       }
       console.error('❌ Erreur paiement:', err);
     }
@@ -221,7 +220,7 @@ const PaymentScreen = {
   },
 
   async payCash() {
-    App.showLoading('Émission du ticket Caisse...');
+    App.showLoading(App.t('payment_cashier_loading'));
     
     try {
       const payload = {
@@ -238,7 +237,7 @@ const PaymentScreen = {
       }
     } catch (err) {
       App.hideLoading();
-      App.showError('service-error', 'Impossible de générer le ticket de Caisse.');
+      App.showError('service-error', 'error_ticket_cashier');
     }
   },
 

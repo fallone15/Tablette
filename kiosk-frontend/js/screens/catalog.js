@@ -8,7 +8,7 @@ const CatalogScreen = {
     container.innerHTML = `
       <div class="service-loading">
         <div class="spinner"></div>
-        <p>Chargement du catalogue...</p>
+        <p>${App.t('catalog_loading')}</p>
       </div>`;
 
     try {
@@ -21,7 +21,7 @@ const CatalogScreen = {
     } catch (err) {
       container.innerHTML = `
         <div class="error-msg" style="display: block;">
-          Impossible de charger le catalogue pour le moment.
+          ${App.t('error_loading')}
         </div>`;
       console.error('Erreur catalogue:', err);
     }
@@ -31,12 +31,11 @@ const CatalogScreen = {
     container.innerHTML = '';
     
     if (!catalog || catalog.length === 0) {
-      container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Aucun médecin disponible dans le catalogue.</p>';
+      container.innerHTML = `<p style="text-align: center; color: var(--text-muted);">${App.t('catalog_empty')}</p>`;
       return;
     }
 
     catalog.forEach(service => {
-      // Pour chaque service, on crée un bloc
       const serviceBlock = document.createElement('div');
       serviceBlock.style.background = 'var(--bg-card)';
       serviceBlock.style.border = '1px solid var(--border)';
@@ -65,24 +64,23 @@ const CatalogScreen = {
         let horairesHtml = '<ul style="list-style: none; padding: 0; margin: 10px 0 0 0; font-size: 14px; color: var(--text-secondary);">';
         
         if (medecin.disponibilites && medecin.disponibilites.length > 0) {
-          // Tri par jour de la semaine
           medecin.disponibilites.sort((a, b) => a.jour_semaine - b.jour_semaine);
           
           medecin.disponibilites.forEach(disp => {
-            const jourNom = this._jours[disp.jour_semaine] || `Jour ${disp.jour_semaine}`;
+            const jourNom = App.t(`day_${disp.jour_semaine}`);
             const debut = String(disp.heure_debut).substring(0, 5);
             const fin = String(disp.heure_fin).substring(0, 5);
             horairesHtml += `<li style="margin-bottom: 4px;"><strong>${jourNom}</strong> : ${debut} - ${fin}</li>`;
           });
         } else {
-          horairesHtml += '<li>Aucun horaire renseigné</li>';
+          horairesHtml += `<li>${App.t('no_schedule')}</li>`;
         }
         horairesHtml += '</ul>';
 
         docCard.innerHTML = `
           <div style="font-weight: 700; font-size: 18px; margin-bottom: 4px;">Dr. ${medecin.prenom} ${medecin.nom}</div>
           <div style="font-size: 13px; color: var(--primary); font-weight: 600; margin-bottom: 12px;">${medecin.specialite || service.nom}</div>
-          <div style="font-size: 14px; font-weight: 500; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Horaires :</div>
+          <div style="font-size: 14px; font-weight: 500; border-bottom: 1px solid var(--border); padding-bottom: 8px;">${App.t('hours')}</div>
           ${horairesHtml}
         `;
         doctorsGrid.appendChild(docCard);

@@ -16,17 +16,20 @@ function generateNumeroFile(prefix = 'K-') {
 async function findMedecinDisponible(id_service) {
   const result = await pool.query(`
     SELECT m.id_medecin, m.nom, m.prenom, m.specialite,
-           COUNT(c.id_consultation) AS consultations_en_attente
+           (
+             SELECT COUNT(*) FROM public.consultations c2 
+             WHERE c2.id_medecin = m.id_medecin AND c2.statut = 'en_attente' AND DATE(c2.heure_arrivee) = CURRENT_DATE
+           ) + (
+             SELECT COUNT(*) FROM public.tickets t 
+             WHERE t.id_medecin = m.id_medecin AND t.statut = 'en_attente' AND DATE(t.heure_arrivee) = CURRENT_DATE
+           ) AS consultations_en_attente
     FROM public.medecins m
     JOIN public.disponibilites d ON m.id_medecin = d.medecin_id
-    LEFT JOIN public.consultations c ON m.id_medecin = c.id_medecin 
-      AND c.statut = 'en_attente' 
-      AND DATE(c.heure_arrivee) = CURRENT_DATE
     WHERE m.id_service = $1
       AND m.actif = true
-      -- Vérifier le jour d'aujourd'hui (jour_semaine : 0=dimanche, 1=lundi, ..., 6=samedi)
+      -- Vérifier le jour d'aujourd'hui
       AND d.jour_semaine = EXTRACT(DOW FROM NOW())
-      -- Vérifier l'horaire actuel (gère aussi les créneaux passant minuit)
+      -- Vérifier l'horaire actuel
       AND (
         (d.heure_debut < d.heure_fin AND CURRENT_TIME >= d.heure_debut AND CURRENT_TIME < d.heure_fin)
         OR
@@ -35,6 +38,7 @@ async function findMedecinDisponible(id_service) {
     GROUP BY m.id_medecin, m.nom, m.prenom, m.specialite
     ORDER BY consultations_en_attente ASC
     LIMIT 1
+
   `, [id_service]);
 
   return result.rows[0] || null;
@@ -43,11 +47,12 @@ async function findMedecinDisponible(id_service) {
 // ─── Calculer l'heure estimée de passage ─────────────────────────────────────
 async function calcHeurEstimee(id_medecin, duree_moyenne) {
   const result = await pool.query(`
-    SELECT COUNT(*) AS nb
-    FROM public.consultations
-    WHERE id_medecin = $1
-      AND statut = 'en_attente'
-      AND DATE(heure_arrivee) = CURRENT_DATE
+    SELECT (
+      (SELECT COUNT(*) FROM public.consultations WHERE id_medecin = $1 AND statut = 'en_attente' AND DATE(heure_arrivee) = CURRENT_DATE)
+      +
+      (SELECT COUNT(*) FROM public.tickets WHERE id_medecin = $1 AND statut = 'en_attente' AND DATE(heure_arrivee) = CURRENT_DATE)
+    ) AS nb
+
   `, [id_medecin]);
 
   const nbEnAttente = parseInt(result.rows[0].nb) || 0;
@@ -116,17 +121,18 @@ router.get('/check-doctor-availability/:id_service', async (req, res) => {
     const result = await pool.query(`
       SELECT m.id_medecin, m.nom, m.prenom, m.specialite,
              d.heure_debut, d.heure_fin,
-             COUNT(c.id_consultation) AS consultations_en_attente
+             (
+               SELECT COUNT(*) FROM public.consultations c
+               WHERE c.id_medecin = m.id_medecin AND c.statut = 'en_attente' AND DATE(c.heure_arrivee) = CURRENT_DATE
+             ) + (
+               SELECT COUNT(*) FROM public.tickets t
+               WHERE t.id_medecin = m.id_medecin AND t.statut = 'en_attente' AND DATE(t.heure_arrivee) = CURRENT_DATE
+             ) AS consultations_en_attente
       FROM public.medecins m
       JOIN public.disponibilites d ON m.id_medecin = d.medecin_id
-      LEFT JOIN public.consultations c ON m.id_medecin = c.id_medecin 
-        AND c.statut = 'en_attente' 
-        AND DATE(c.heure_arrivee) = CURRENT_DATE
       WHERE m.id_service = $1 
         AND m.actif = true
-        -- Vérifier le jour de la semaine (EXTRACT(DOW) retourne 0=dimanche, 1=lundi, etc)
         AND d.jour_semaine = EXTRACT(DOW FROM NOW())
-        -- Vérifier l'horaire actuel (gère aussi les créneaux passant minuit)
         AND (
           (d.heure_debut < d.heure_fin AND CURRENT_TIME >= d.heure_debut AND CURRENT_TIME < d.heure_fin)
           OR
@@ -135,6 +141,7 @@ router.get('/check-doctor-availability/:id_service', async (req, res) => {
       GROUP BY m.id_medecin, m.nom, m.prenom, m.specialite, d.heure_debut, d.heure_fin
       ORDER BY m.id_medecin
     `, [id_service]);
+
 
     const available = result.rows.length > 0;
 
@@ -221,33 +228,60 @@ router.post('/checkin', async (req, res) => {
 
     let numeroFile;
     let tentatives = 0;
+    const tableDest = est_visiteur ? 'public.tickets' : 'public.consultations';
+    
     do {
       numeroFile = generateNumeroFile();
-      const check = await pool.query('SELECT 1 FROM public.consultations WHERE numero_file = $1', [numeroFile]);
-      if (check.rows.length === 0) break;
+      const checkConsult = await pool.query('SELECT 1 FROM public.consultations WHERE numero_file = $1', [numeroFile]);
+      const checkTicket = await pool.query('SELECT 1 FROM public.tickets WHERE numero_file = $1', [numeroFile]);
+      if (checkConsult.rows.length === 0 && checkTicket.rows.length === 0) break;
       tentatives++;
     } while (tentatives < 10);
 
     const prefix_motif = id_rendez_vous ? `[RDV WEB #${id_rendez_vous}] ` : '';
     const final_motif = motif ? (prefix_motif + motif) : (prefix_motif + (est_visiteur ? 'Passage borne (visiteur)' : 'Passage borne'));
 
-    const consult = await pool.query(`
-      INSERT INTO public.consultations (
-        id_patient, id_service, id_medecin, id_salle,
-        numero_file, heure_arrivee, heure_estimee,
-        statut, motif, montant_paye, mode_paiement
-      ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, 'en_attente', $7, $8, $9)
-      RETURNING *
-    `, [
-      patient_id, id_service, medecin.id_medecin, salle ? salle.id_salle : null,
-      numeroFile, heureEstimee, final_motif, service.tarif, mode_paiement || 'CB'
-    ]);
-    const consultation = consult.rows[0];
+    let insertionResult;
+    if (est_visiteur) {
+      // Insertion anonyme dans la table TICKETS
+      insertionResult = await pool.query(`
+        INSERT INTO public.tickets (
+          id_service, id_medecin, id_salle,
+          numero_file, heure_arrivee, heure_estimee,
+          statut, motif, montant_paye, mode_paiement
+        ) VALUES ($1, $2, $3, $4, NOW(), $5, 'en_attente', $6, $7, $8)
+        RETURNING *
+      `, [
+        id_service, medecin.id_medecin, salle ? salle.id_salle : null,
+        numeroFile, heureEstimee, final_motif, service.tarif, mode_paiement || 'CB'
+      ]);
+    } else {
+      // Insertion classique dans CONSULTATIONS
+      insertionResult = await pool.query(`
+        INSERT INTO public.consultations (
+          id_patient, id_service, id_medecin, id_salle,
+          numero_file, heure_arrivee, heure_estimee,
+          statut, motif, montant_paye, mode_paiement
+        ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, 'en_attente', $7, $8, $9)
+        RETURNING *
+      `, [
+        patient_id, id_service, medecin.id_medecin, salle ? salle.id_salle : null,
+        numeroFile, heureEstimee, final_motif, service.tarif, mode_paiement || 'CB'
+      ]);
+    }
 
     const positionRes = await pool.query(`
-      SELECT COUNT(*) AS position FROM public.consultations
-      WHERE id_medecin = $1 AND statut = 'en_attente' AND DATE(heure_arrivee) = CURRENT_DATE AND id_consultation <= $2
-    `, [medecin.id_medecin, consultation.id_consultation]);
+      SELECT (
+        (SELECT COUNT(*) FROM public.consultations WHERE id_medecin = $1 AND statut = 'en_attente' AND DATE(heure_arrivee) = CURRENT_DATE AND id_consultation <= $2)
+        +
+        (SELECT COUNT(*) FROM public.tickets WHERE id_medecin = $1 AND statut = 'en_attente' AND DATE(heure_arrivee) = CURRENT_DATE AND id <= $2)
+      ) AS position
+    `, [medecin.id_medecin, insertionResult.rows[0].id || insertionResult.rows[0].id_consultation]);
+
+    // Mettre à jour le statut du RDV si présent pour éviter les doubles check-ins
+    if (id_rendez_vous) {
+      await pool.query('UPDATE public.rendez_vous SET statut = \'arrive\' WHERE id = $1', [id_rendez_vous]);
+    }
 
     res.json({
       success: true,
@@ -258,7 +292,7 @@ router.post('/checkin', async (req, res) => {
         service: { nom: service.nom, tarif: service.tarif, duree_moyenne: service.duree_moyenne },
         medecin: { nom: medecin.nom, prenom: medecin.prenom, specialite: medecin.specialite },
         salle: salle ? { numero: salle.numero_salle, batiment: salle.batiment, etage: salle.etage } : null,
-        heure_arrivee: consultation.heure_arrivee,
+        heure_arrivee: insertionResult.rows[0].heure_arrivee,
         heure_estimee: heureEstimee,
         est_visiteur: !!est_visiteur,
         is_rdv: rdvFound
@@ -309,12 +343,17 @@ router.get('/queue/:id_service', async (req, res) => {
   const { id_service } = req.params;
   try {
     const result = await pool.query(`
-      SELECT COUNT(*) AS personnes_en_attente, s.duree_moyenne, s.nom AS service_nom
-      FROM public.consultations c
-      JOIN public.services s ON s.id_service = c.id_service
-      WHERE c.id_service = $1 AND c.statut = 'en_attente' AND DATE(c.heure_arrivee) = CURRENT_DATE
-      GROUP BY s.duree_moyenne, s.nom
+      SELECT 
+        (
+          (SELECT COUNT(*) FROM public.consultations WHERE id_service = $1 AND statut = 'en_attente' AND DATE(heure_arrivee) = CURRENT_DATE)
+          +
+          (SELECT COUNT(*) FROM public.tickets WHERE id_service = $1 AND statut = 'en_attente' AND DATE(heure_arrivee) = CURRENT_DATE)
+        ) AS personnes_en_attente,
+        s.duree_moyenne, s.nom AS service_nom
+      FROM public.services s
+      WHERE s.id_service = $1
     `, [id_service]);
+
 
     const data = result.rows[0] || { personnes_en_attente: 0, duree_moyenne: 30 };
     const temps = parseInt(data.personnes_en_attente) * parseInt(data.duree_moyenne);

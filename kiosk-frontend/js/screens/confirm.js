@@ -8,13 +8,21 @@ const ConfirmScreen = {
       `${patient.prenom} ${patient.nom}`;
 
     // Méta infos
-    const sexeLabel = patient.sexe === 'homme' ? 'Homme' : patient.sexe === 'femme' ? 'Femme' : 'Autre';
-    const ageText = patient.age ? `${patient.age} ans` : '';
+    const localeMap = { fr: 'fr-FR', en: 'en-US', ar: 'ar-MA' };
+    const locale = localeMap[App.state.lang] || 'fr-FR';
+
+    const sexeKey = patient.sexe === 'homme' ? 'male' : patient.sexe === 'femme' ? 'female' : 'other';
+    const sexeLabel = App.t(sexeKey);
+    
+    const ageText = patient.age ? App.t('years_old', { n: patient.age }) : '';
     const naissance = patient.date_naissance
-      ? new Date(patient.date_naissance).toLocaleDateString('fr-FR')
+      ? new Date(patient.date_naissance).toLocaleDateString(locale)
       : '';
+      
+    const bornText = naissance ? App.t('born_on', { date: naissance }) : '';
+    
     document.getElementById('patient-meta').textContent =
-      `${sexeLabel} · ${ageText} · Né(e) le ${naissance}`;
+      `${sexeLabel} · ${ageText} · ${bornText}`;
 
     // Groupe sanguin
     const bloodEl = document.getElementById('patient-blood');
@@ -28,10 +36,10 @@ const ConfirmScreen = {
     // Allergies
     const allergEl = document.getElementById('patient-allergies');
     if (patient.allergies && patient.allergies.length > 0 && patient.allergies[0] !== '') {
-      allergEl.textContent = `⚠ Allergies: ${patient.allergies.join(', ')}`;
+      allergEl.textContent = `⚠ ${App.t('allergies_label')}: ${patient.allergies.join(', ')}`;
       allergEl.classList.remove('hidden');
     } else {
-      allergEl.textContent = '✓ Pas d\'allergies connues';
+      allergEl.textContent = `✓ ${App.t('no_allergies')}`;
       allergEl.className = 'patient-badge';
     }
 

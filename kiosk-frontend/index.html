@@ -6,7 +6,7 @@
   <meta name="description" content="Borne d'accueil intelligente CareTrack — Enregistrez-vous rapidement pour votre consultation" />
   <title>CareTrack — Borne d'Accueil</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/kiosk.css" />
 </head>
 <body>
@@ -21,16 +21,24 @@
   <header class="topbar">
     <div class="topbar-left">
       <div class="logo">
-        <div class="logo-icon">🏥</div>
+        <div class="logo-icon">⚕️</div>
         <div class="logo-text">
           <span class="logo-name">CareTrack</span>
-          <span class="logo-sub">L'Hôpital Intelligent</span>
+          <span class="logo-sub" data-i18n="logo_sub">L'Hôpital Intelligent</span>
         </div>
       </div>
     </div>
     <div class="topbar-right">
-      <div id="clock" class="clock"></div>
-      <div id="date-display" class="date-display"></div>
+      <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="fr" onclick="App.setLanguage('fr')">FR</button>
+        <button class="lang-btn" data-lang="en" onclick="App.setLanguage('en')">EN</button>
+        <button class="lang-btn" data-lang="ar" onclick="App.setLanguage('ar')">AR</button>
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="topbar-time">
+        <div id="clock" class="clock"></div>
+        <div id="date-display" class="date-display"></div>
+      </div>
     </div>
   </header>
 
@@ -44,17 +52,17 @@
       <div class="welcome-content">
         <div class="welcome-hero">
           <div class="pulse-ring"></div>
-          <div class="welcome-icon">🏥</div>
+          <div class="welcome-icon">🌞</div>
         </div>
-        <h1 class="welcome-title">Bienvenue à CareTrack 😊</h1>
-        <p class="welcome-subtitle">Sélectionnez votre situation pour commencer</p>
+        <h1 class="welcome-title" data-i18n="welcome_title">Bienvenue à CareTrack</h1>
+        <p class="welcome-subtitle" data-i18n="welcome_subtitle">Sélectionnez votre situation pour commencer</p>
 
         <div class="welcome-cards">
           <button id="btn-has-card" class="welcome-card card-primary" onclick="App.goTo('rfid-scan')">
             <div class="card-icon">💳</div>
             <div class="card-body">
-              <h2>J'ai ma carte patient</h2>
-              <p>Identification rapide par carte RFID et code PIN</p>
+              <h2 data-i18n="btn_has_card">J'ai ma carte patient</h2>
+              <p data-i18n="btn_has_card_desc">Identification rapide par carte RFID </p>
             </div>
             <div class="card-arrow">→</div>
           </button>
@@ -62,19 +70,19 @@
           <button id="btn-no-card" class="welcome-card card-secondary" onclick="App.goTo('guest-flow')">
             <div class="card-icon">👤</div>
             <div class="card-body">
-              <h2>Je suis nouveau / Sans carte</h2>
-              <p>Prise en charge rapide sans dossier requis</p>
+              <h2 data-i18n="btn_no_card">Je suis nouveau / Sans carte</h2>
+              <p data-i18n="btn_no_card_desc">Prise en charge rapide sans dossier requis</p>
             </div>
             <div class="card-arrow">→</div>
           </button>
         </div>
 
-        <p class="welcome-help">Besoin d'aide ? Adressez-vous à l'accueil.</p>
+        <p class="welcome-help" data-i18n="help_text">Besoin d'aide ? Adressez-vous à l'accueil.</p>
 
         <!-- Floating action button detached -->
         <button onclick="App.goTo('catalog')" style="position: fixed; bottom: 40px; right: 40px; background: rgba(0, 180, 216, 0.15); border: 1px solid rgba(0, 180, 216, 0.4); padding: 16px 28px; border-radius: 50px; font-size: 16px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); backdrop-filter: blur(10px); transition: all 0.2s; z-index: 100;" onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(0, 180, 216, 0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(0, 180, 216, 0.15)';">
           <span style="font-size: 22px;">📅</span> 
-          <span>Catalogue et Horaires</span>
+          <span data-i18n="btn_catalog">Catalogue et Horaires</span>
         </button>
       </div>
     </div>
@@ -84,7 +92,7 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div id="screen-rfid-scan" class="screen">
       <div class="screen-inner">
-        <button class="back-btn" onclick="App.goTo('welcome')">← Retour</button>
+        <button class="back-btn" onclick="App.goTo('welcome')" data-i18n="back">← Retour</button>
         <div class="step-indicator">
           <span class="step active">1</span>
           <span class="step-line"></span>
@@ -102,23 +110,24 @@
             <div class="nfc-ring nfc-ring-3"></div>
             <div class="nfc-icon">📶</div>
           </div>
-          <h2 class="rfid-title">Approchez votre carte du lecteur</h2>
-          <p class="rfid-subtitle">Placez la carte dans la zone de lecture ci-dessus</p>
+          <h2 class="rfid-title" data-i18n="rfid_title">Approchez votre carte du lecteur</h2>
+          <p class="rfid-subtitle" data-i18n="rfid_subtitle">Placez la carte dans la zone de lecture ci-dessus</p>
 
           <!-- Champ caché pour simuler le lecteur RFID (en prod, le lecteur envoie ici) -->
           <div class="rfid-manual">
-            <p class="rfid-manual-label">— ou saisir manuellement (test) —</p>
+            <p class="rfid-manual-label" data-i18n="rfid_manual">— ou saisir manuellement (test) —</p>
             <div class="rfid-input-row">
               <input
                 id="rfid-input"
                 type="text"
                 class="rfid-input"
                 placeholder="N° carte (ex: PAT9660)"
+                data-i18n="rfid_placeholder"
                 autocomplete="off"
                 autocorrect="off"
                 spellcheck="false"
               />
-              <button class="rfid-submit-btn" onclick="RfidScreen.submit()">Valider</button>
+              <button class="rfid-submit-btn" onclick="RfidScreen.submit()" data-i18n="rfid_validate">Valider</button>
             </div>
           </div>
         </div>
@@ -127,7 +136,7 @@
 
         <div class="timeout-bar-wrap">
           <div id="rfid-timeout-bar" class="timeout-bar"></div>
-          <span id="rfid-timeout-text" class="timeout-text">Retour automatique dans 60s</span>
+          <span id="rfid-timeout-text" class="timeout-text" data-i18n="rfid_timeout">Retour automatique dans 60s</span>
         </div>
       </div>
     </div>
@@ -137,7 +146,7 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div id="screen-pin-entry" class="screen">
       <div class="screen-inner">
-        <button class="back-btn" onclick="App.goTo('rfid-scan')">← Retour</button>
+        <button class="back-btn" onclick="App.goTo('rfid-scan')" data-i18n="back">← Retour</button>
         <div class="step-indicator">
           <span class="step done">✓</span>
           <span class="step-line active"></span>
@@ -149,8 +158,8 @@
         </div>
 
         <div class="pin-zone">
-          <div class="pin-hello">Bonjour, <span id="pin-prenom">Patient</span> 👋</div>
-          <h2 class="pin-title">Entrez votre code PIN</h2>
+          <div class="pin-hello"><span data-i18n="pin_hello">Bonjour</span>, <span id="pin-prenom">Patient</span> 👋</div>
+          <h2 class="pin-title" data-i18n="pin_title">Entrez votre code PIN</h2>
           <div class="pin-dots" id="pin-dots">
             <div class="pin-dot" data-pos="0"></div>
             <div class="pin-dot" data-pos="1"></div>
@@ -185,7 +194,7 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div id="screen-patient-confirm" class="screen">
       <div class="screen-inner">
-        <button class="back-btn" onclick="App.back()">← Retour</button>
+        <button class="back-btn" onclick="App.back()" data-i18n="back">← Retour</button>
         <div class="step-indicator">
           <span class="step done">✓</span>
           <span class="step-line active"></span>
@@ -197,7 +206,7 @@
         </div>
 
         <div class="confirm-zone">
-          <h2 class="confirm-title">Est-ce bien vous ?</h2>
+          <h2 class="confirm-title" data-i18n="confirm_title">Est-ce bien vous ?</h2>
 
           <div class="patient-card" id="patient-card-display">
             <div class="patient-photo-wrap">
@@ -215,10 +224,10 @@
           </div>
 
           <div class="confirm-actions">
-            <button id="btn-confirm-yes" class="btn-confirm-yes" onclick="ConfirmScreen.yes()">
+            <button id="btn-confirm-yes" class="btn-confirm-yes" onclick="ConfirmScreen.yes()" data-i18n="confirm_yes">
               ✓ Oui, c'est moi
             </button>
-            <button id="btn-confirm-no" class="btn-confirm-no" onclick="App.goTo('welcome')">
+            <button id="btn-confirm-no" class="btn-confirm-no" onclick="App.goTo('welcome')" data-i18n="confirm_no">
               ✗ Ce n'est pas moi
             </button>
           </div>
@@ -231,7 +240,7 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div id="screen-appointments" class="screen">
       <div class="screen-inner">
-        <button class="back-btn" onclick="App.back()">← Retour</button>
+        <button class="back-btn" onclick="App.back()" data-i18n="back">← Retour</button>
         <div class="step-indicator">
           <span class="step done">✓</span>
           <span class="step-line active"></span>
@@ -242,25 +251,24 @@
           <span class="step">4</span>
         </div>
 
-        <h2 class="service-title">Vous avez un rendez-vous aujourd'hui</h2>
-        <p class="service-subtitle">Confirmez votre passage pour l'un des rendez-vous ci-dessous :</p>
+        <h2 class="service-title" data-i18n="appts_title">Vous avez un rendez-vous aujourd'hui</h2>
+        <p class="service-subtitle" data-i18n="appts_subtitle">Confirmez votre passage pour l'un des rendez-vous ci-dessous :</p>
 
         <div id="appointments-list" class="appointments-list" style="width:100%;max-width:700px;display:flex;flex-direction:column;gap:16px;">
           <!-- Injecté dynamiquement -->
         </div>
 
-        <button class="btn-secondary btn-xl" onclick="AppointmentsScreen.skip()" style="margin-top:20px; background:var(--bg-card); border: 1px solid var(--border); color:var(--text-secondary);">
+        <button class="btn-secondary btn-xl" onclick="AppointmentsScreen.skip()" style="margin-top:20px; background:var(--bg-card); border: 1px solid var(--border); color:var(--text-secondary);" data-i18n="appts_skip">
           Prendre un ticket pour un autre motif
         </button>
+
+        <div id="appointments-error" class="error-msg hidden" style="margin-top:20px; width:100%; max-width:700px;"></div>
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!-- ÉCRAN 5.5 : PAIEMENT (Si pas de RDV prépayé)                   -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
     <div id="screen-payment" class="screen">
       <div class="screen-inner">
-        <button class="back-btn" onclick="App.back()">← Retour</button>
+        <button class="back-btn" onclick="App.back()" data-i18n="back">← Retour</button>
         <div class="step-indicator">
           <span class="step done">✓</span>
           <span class="step-line active"></span>
@@ -272,18 +280,18 @@
         </div>
 
         <div class="payment-zone" style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:700px;gap:20px;">
-          <h2 class="guest-title" style="margin-bottom:0;">Comment souhaitez-vous régler ?</h2>
+          <h2 class="guest-title" style="margin-bottom:0;" data-i18n="payment_title">Comment souhaitez-vous régler ?</h2>
           <p class="guest-subtitle" style="margin-top:0;">
-            Montant de la consultation : <strong id="payment-amount" style="color:var(--primary);font-size:24px;">— MAD</strong>
+            <span data-i18n="payment_amount">Montant de la consultation :</span> <strong id="payment-amount" style="color:var(--primary);font-size:24px;">— MAD</strong>
           </p>
           <div style="display:flex;gap:20px;width:100%;margin-top:20px;">
             <button class="btn-primary" style="flex:1;min-height:140px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;" onclick="PaymentScreen.payCB()">
               <span style="font-size:40px;">💳</span>
-              Carte Bancaire<br><span style="font-size:13px;font-weight:400;">(Sur cette borne)</span>
+              <span data-i18n="payment_card">Carte Bancaire</span><br><span style="font-size:13px;font-weight:400;" data-i18n="payment_card_desc">(Sur cette borne)</span>
             </button>
             <button class="btn-secondary" style="flex:1;min-height:140px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;background:var(--bg-card);border:2px solid var(--warning);color:#fff;cursor:pointer;border-radius:var(--radius-md);" onclick="PaymentScreen.payCash()">
               <span style="font-size:40px;">💵</span>
-              Espèces<br><span style="font-size:13px;font-weight:400;color:var(--text-secondary);">(Ticket pour la caissière)</span>
+              <span data-i18n="payment_cash">Espèces</span><br><span style="font-size:13px;font-weight:400;color:var(--text-secondary);" data-i18n="payment_cash_desc">(Ticket pour la caissière)</span>
             </button>
           </div>
         </div>
@@ -295,7 +303,7 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div id="screen-service-select" class="screen">
       <div class="screen-inner">
-        <button class="back-btn" onclick="App.back()">← Retour</button>
+        <button class="back-btn" onclick="App.back()" data-i18n="back">← Retour</button>
         <div class="step-indicator" id="service-step-indicator">
           <span class="step done">✓</span>
           <span class="step-line active"></span>
@@ -306,13 +314,13 @@
           <span class="step active">4</span>
         </div>
 
-        <h2 class="service-title">Quel service souhaitez-vous ?</h2>
-        <p class="service-subtitle">Sélectionnez le type de consultation</p>
+        <h2 class="service-title" data-i18n="service_title">Quel service souhaitez-vous ?</h2>
+        <p class="service-subtitle" data-i18n="service_subtitle">Sélectionnez le type de consultation</p>
 
         <div id="services-grid" class="services-grid">
           <div class="service-loading">
             <div class="spinner"></div>
-            <p>Chargement des services...</p>
+            <p data-i18n="service_loading">Chargement des services...</p>
           </div>
         </div>
 
@@ -325,14 +333,14 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div id="screen-guest-flow" class="screen">
       <div class="screen-inner">
-        <button class="back-btn" onclick="App.goTo('welcome')">← Retour</button>
+        <button class="back-btn" onclick="App.goTo('welcome')" data-i18n="back">← Retour</button>
 
         <div class="guest-zone" style="max-width: 100%;">
           <div class="guest-icon">👤</div>
-          <h2 class="service-title" style="text-align: center; margin: 0;">Prise en charge rapide</h2>
+          <h2 class="service-title" style="text-align: center; margin: 0;" data-i18n="guest_title">Prise en charge rapide</h2>
           <p class="service-subtitle" style="text-align: center; margin-bottom: 20px;">
-            Vous serez orienté vers un médecin disponible.<br/>
-            Aucun dossier ne sera créé.
+            <span data-i18n="guest_subtitle1">Vous serez orienté vers un médecin disponible.</span><br/>
+            <span data-i18n="guest_subtitle2">Aucun dossier ne sera créé.</span>
           </p>
 
           <div style="width: 100%;">
@@ -344,9 +352,11 @@
             </div>
           </div>
 
-          <button class="btn-primary btn-xl" onclick="GuestScreen.proceed()">
+          <button class="btn-primary btn-xl" onclick="GuestScreen.proceed()" data-i18n="guest_proceed">
             Continuer vers le paiement →
           </button>
+
+          <div id="guest-error" class="error-msg hidden" style="margin-top:20px; width:100%;"></div>
         </div>
       </div>
     </div>
@@ -357,21 +367,21 @@
     <div id="screen-ticket" class="screen">
       <div class="screen-inner ticket-screen-inner">
         <div class="ticket-success-icon">✅</div>
-        <h2 class="ticket-heading">Votre ticket de passage</h2>
+        <h2 class="ticket-heading" data-i18n="ticket_success">Votre ticket de passage</h2>
 
         <div class="ticket-card" id="ticket-card">
           <div class="ticket-header">
-            <div class="ticket-hospital">🏥 CareTrack</div>
+            <div class="ticket-hospital"> CareTrack</div>
             <div class="ticket-date-time" id="ticket-datetime"></div>
           </div>
 
           <div class="ticket-number-wrap" id="ticket-number-wrap">
-            <div class="ticket-number-label" id="ticket-type-label">Votre numéro</div>
+            <div class="ticket-number-label" id="ticket-type-label" data-i18n="ticket_number_label">Votre numéro</div>
             <div class="ticket-number" id="ticket-number">—</div>
             <div class="ticket-position" id="ticket-position">Vous êtes le N°<span>1</span> en attente</div>
           </div>
 
-          <div id="ticket-payment-alert" class="hidden" style="background:rgba(231,76,60,0.1); border:2px dashed var(--danger); color:var(--danger); padding:15px; margin: 15px 20px; border-radius:var(--radius-md); text-align:center; font-weight:700; font-size:18px;">
+          <div id="ticket-payment-alert" class="hidden" style="background:rgba(231,76,60,0.1); border:2px dashed var(--danger); color:var(--danger); padding:15px; margin: 15px 20px; border-radius:var(--radius-md); text-align:center; font-weight:700; font-size:18px;" data-i18n="ticket_payment_alert">
             ⚠️ Veuillez régler la consultation à la caisse (Accueil) avant de patienter.
           </div>
 
@@ -381,50 +391,50 @@
             <div class="ticket-detail-row">
               <span class="ticket-detail-icon">🩺</span>
               <div>
-                <span class="ticket-detail-label">Service</span>
+                <span class="ticket-detail-label" data-i18n="ticket_service">Service</span>
                 <span class="ticket-detail-value" id="ticket-service">—</span>
               </div>
             </div>
             <div class="ticket-detail-row" id="ticket-medecin-row">
               <span class="ticket-detail-icon">👨‍⚕️</span>
               <div>
-                <span class="ticket-detail-label">Médecin</span>
+                <span class="ticket-detail-label" data-i18n="ticket_doctor">Médecin</span>
                 <span class="ticket-detail-value" id="ticket-medecin">—</span>
               </div>
             </div>
             <div class="ticket-detail-row" id="ticket-salle-row">
               <span class="ticket-detail-icon">🚪</span>
               <div>
-                <span class="ticket-detail-label">Salle</span>
+                <span class="ticket-detail-label" data-i18n="ticket_room">Salle</span>
                 <span class="ticket-detail-value" id="ticket-salle">—</span>
               </div>
             </div>
             <div class="ticket-detail-row" id="ticket-heure-row">
               <span class="ticket-detail-icon">⏰</span>
               <div>
-                <span class="ticket-detail-label">Heure estimée</span>
+                <span class="ticket-detail-label" data-i18n="ticket_est_time">Heure estimée</span>
                 <span class="ticket-detail-value" id="ticket-heure">—</span>
               </div>
             </div>
             <div class="ticket-detail-row">
               <span class="ticket-detail-icon">💰</span>
               <div>
-                <span class="ticket-detail-label">Tarif</span>
+                <span class="ticket-detail-label" data-i18n="ticket_price">Tarif</span>
                 <span class="ticket-detail-value" id="ticket-tarif">—</span>
               </div>
             </div>
           </div>
 
           <div class="ticket-footer" id="ticket-footer">
-            <p id="ticket-footer-msg1">Merci de vous installer en salle d'attente.</p>
-            <p id="ticket-footer-msg2">Un soignant vous appellera par votre numéro.</p>
+            <p id="ticket-footer-msg1" data-i18n="ticket_msg_1">Merci de vous installer en salle d'attente.</p>
+            <p id="ticket-footer-msg2" data-i18n="ticket_msg_2">Un soignant vous appellera par votre numéro.</p>
           </div>
         </div>
 
         <div class="ticket-actions">
-          <button class="btn-print" onclick="window.print()">🖨️ Imprimer le ticket</button>
-          <button class="btn-new-session" onclick="App.goTo('welcome')">🏠 Nouvelle session</button>
-          <div class="ticket-countdown">
+          <button class="btn-print" onclick="window.print()" data-i18n="ticket_print">🖨️ Imprimer le ticket</button>
+          <button class="btn-new-session" onclick="App.goTo('welcome')" data-i18n="ticket_new_session">🏠 Nouvelle session</button>
+          <div class="ticket-countdown" data-i18n="ticket_countdown">
             Retour à l'accueil dans <span id="ticket-countdown">60</span>s
           </div>
         </div>
@@ -436,14 +446,14 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div id="screen-catalog" class="screen">
       <div class="screen-inner" style="max-width: 900px;">
-        <button class="back-btn" onclick="App.goTo('welcome')">← Retour</button>
-        <h2 class="service-title">Catalogue des Médecins</h2>
-        <p class="service-subtitle">Consultez nos médecins spécialisés et leurs horaires de disponibilité.</p>
+        <button class="back-btn" onclick="App.goTo('welcome')" data-i18n="back">← Retour</button>
+        <h2 class="service-title" data-i18n="catalog_title">Catalogue des Médecins</h2>
+        <p class="service-subtitle" data-i18n="catalog_subtitle">Consultez nos médecins spécialisés et leurs horaires de disponibilité.</p>
 
         <div id="catalog-container" style="margin-top: 30px; width: 100%; display: flex; flex-direction: column; gap: 20px;">
           <div class="service-loading">
             <div class="spinner"></div>
-            <p>Chargement du catalogue...</p>
+            <p data-i18n="catalog_loading">Chargement du catalogue...</p>
           </div>
         </div>
       </div>
@@ -466,6 +476,7 @@
 
   <!-- Scripts -->
   <script src="https://js.stripe.com/v3/"></script>
+  <script src="js/translations.js"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script src="js/screens/rfid.js"></script>

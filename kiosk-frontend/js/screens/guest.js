@@ -23,7 +23,7 @@ const GuestScreen = {
     container.innerHTML = `
       <div class="service-loading" style="padding:20px;">
         <div class="spinner"></div>
-        <p>Chargement...</p>
+        <p>${App.t('loading')}...</p>
       </div>`;
 
     try {
@@ -32,7 +32,7 @@ const GuestScreen = {
     } catch (err) {
       container.innerHTML = `
         <p style="color:var(--text-muted);font-size:14px;padding:12px;">
-          Impossible de charger les services. Vous pouvez continuer sans motif.
+          ${App.t('error_loading')}
         </p>`;
     }
   },
@@ -63,14 +63,14 @@ const GuestScreen = {
         <div class="service-card-name">${s.nom}</div>
         <div class="service-card-desc">${s.description || ''}</div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="service-card-wait">⏱ ~${s.duree_moyenne} min/patient</span>
-          <span class="${badgeClass}">${attente} en attente</span>
+          <span class="service-card-wait">${App.t('service_wait', { n: s.duree_moyenne })}</span>
+          <span class="${badgeClass}">${App.t('service_queue', { n: attente })}</span>
         </div>
         <div class="service-card-footer">
-          <span class="service-card-tarif">${parseFloat(s.tarif).toFixed(2)} MAD</span>
+          <span class="service-card-tarif">${parseFloat(s.tarif).toFixed(2)} ${App.t('mad')}</span>
           ${tempsMin > 0
-            ? `<span class="service-card-wait">≈ ${tempsMin} min d'attente</span>`
-            : `<span class="service-card-wait" style="color:var(--success);">Pas d'attente</span>`
+            ? `<span class="service-card-wait">${App.t('service_total_wait', { n: tempsMin })}</span>`
+            : `<span class="service-card-wait" style="color:var(--success);">${App.t('service_no_wait')}</span>`
           }
         </div>
       `;
@@ -88,16 +88,15 @@ const GuestScreen = {
 
   proceed() {
     if (!this._serviceId) {
-      App.showPopup('Veuillez sélectionner une spécialité');
+      App.showPopup(App.t('guest_error_specialty'));
       return;
     }
     
     App.state.estVisiteur = true;
     App.state.motif = this._motif || 'Visiteur borne (sans carte)';
-    App.state.serviceChoisi = this._serviceData; // Utiliser les données complètes du service
+    App.state.serviceChoisi = this._serviceData; 
     
-    // Directement vérifier la dispo et aller au paiement
-    App.showLoading('Vérification de la disponibilité des médecins...');
+    App.showLoading(App.t('loading_doctors'));
     
     this.checkAndProceedToPayment();
   },
@@ -108,7 +107,7 @@ const GuestScreen = {
       
       if (!availRes.available) {
         App.hideLoading();
-        App.showPopup('Aucun médecin disponible pour ce service aujourd\'hui');
+        App.showPopup(App.t('no_doctor'));
         return;
       }
       
@@ -116,7 +115,7 @@ const GuestScreen = {
       App.goTo('payment');
     } catch (err) {
       App.hideLoading();
-      App.showPopup('Aucun médecin disponible pour ce service aujourd\'hui');
+      App.showError('guest-error', 'error_loading');
       console.error('❌ Erreur vérification médecins:', err);
     }
   },

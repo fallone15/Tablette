@@ -15,18 +15,23 @@ router.get('/services', async (req, res) => {
         s.description,
         s.tarif,
         s.duree_moyenne,
-        COUNT(c.id_consultation) FILTER (
-          WHERE c.statut = 'en_attente' AND DATE(c.heure_arrivee) = CURRENT_DATE
+        (
+          SELECT COUNT(*) FROM public.consultations c
+          WHERE c.id_service = s.id_service AND c.statut = 'en_attente' AND DATE(c.heure_arrivee) = CURRENT_DATE
+        ) + (
+          SELECT COUNT(*) FROM public.tickets t
+          WHERE t.id_service = s.id_service AND t.statut = 'en_attente' AND DATE(t.heure_arrivee) = CURRENT_DATE
         ) AS personnes_en_attente,
-        COALESCE(
-          COUNT(c.id_consultation) FILTER (
-            WHERE c.statut = 'en_attente' AND DATE(c.heure_arrivee) = CURRENT_DATE
-          ) * s.duree_moyenne, 0
-        ) AS temps_attente_estime
+        (
+          (SELECT COUNT(*) FROM public.consultations c
+          WHERE c.id_service = s.id_service AND c.statut = 'en_attente' AND DATE(c.heure_arrivee) = CURRENT_DATE
+          ) + (
+          SELECT COUNT(*) FROM public.tickets t
+          WHERE t.id_service = s.id_service AND t.statut = 'en_attente' AND DATE(t.heure_arrivee) = CURRENT_DATE
+          )
+        ) * s.duree_moyenne AS temps_attente_estime
       FROM public.services s
-      LEFT JOIN public.consultations c ON c.id_service = s.id_service
       WHERE s.actif = true
-      GROUP BY s.id_service, s.nom, s.description, s.tarif, s.duree_moyenne
       ORDER BY s.nom
     `);
 

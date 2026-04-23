@@ -35,13 +35,11 @@ const ServicesScreen = {
       const data = await Api.getServices();
       this.render(data.services);
 
-      // Si un service a été préséléctionné, on scrolle vers lui ou on l'encadre
       if (App.state.servicePreselectionne) {
         const id = App.state.servicePreselectionne;
         const card = document.querySelector(`.service-card[data-id="${id}"]`);
         if (card) {
           card.classList.add('highlighted');
-          // Légère temporisation pour le smooth scroll
           setTimeout(() => {
             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }, 100);
@@ -49,7 +47,7 @@ const ServicesScreen = {
       }
     } catch (err) {
       grid.innerHTML = '';
-      App.showError('service-error', 'Impossible de charger les services. Veuillez réessayer.');
+      App.showError('service-error', App.t('error_loading'));
     }
   },
 
@@ -72,14 +70,14 @@ const ServicesScreen = {
         <div class="service-card-name">${s.nom}</div>
         <div class="service-card-desc">${s.description || ''}</div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="service-card-wait">⏱ ~${s.duree_moyenne} min/patient</span>
-          <span class="${badgeClass}">${attente} en attente</span>
+          <span class="service-card-wait">${App.t('service_wait', { n: s.duree_moyenne })}</span>
+          <span class="${badgeClass}">${App.t('service_queue', { n: attente })}</span>
         </div>
         <div class="service-card-footer">
-          <span class="service-card-tarif">${parseFloat(s.tarif).toFixed(2)} MAD</span>
+          <span class="service-card-tarif">${parseFloat(s.tarif).toFixed(2)} ${App.t('mad')}</span>
           ${tempsMin > 0
-            ? `<span class="service-card-wait">≈ ${tempsMin} min d'attente</span>`
-            : `<span class="service-card-wait" style="color:var(--success);">Pas d'attente</span>`
+            ? `<span class="service-card-wait">${App.t('service_total_wait', { n: tempsMin })}</span>`
+            : `<span class="service-card-wait" style="color:var(--success);">${App.t('service_no_wait')}</span>`
           }
         </div>
       `;
@@ -88,14 +86,14 @@ const ServicesScreen = {
   },
 
   async select(service) {
-    App.showLoading('Vérification de la disponibilité des médecins...');
+    App.showLoading(App.t('loading_doctors'));
     
     try {
       const availRes = await Api.checkDoctorAvailability(service.id_service);
       
       if (!availRes.available) {
         App.hideLoading();
-        App.showPopup('Aucun médecin disponible pour ce service aujourd\'hui');
+        App.showPopup(App.t('no_doctor'));
         return;
       }
       
@@ -104,7 +102,7 @@ const ServicesScreen = {
       App.goTo('payment');
     } catch (err) {
       App.hideLoading();
-      App.showPopup('Aucun médecin disponible pour ce service aujourd\'hui');
+      App.showPopup(App.t('no_doctor'));
       console.error('❌ Erreur vérification médecins:', err);
     }
   },

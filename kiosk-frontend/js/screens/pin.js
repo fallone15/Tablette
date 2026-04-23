@@ -35,16 +35,16 @@ const PinScreen = {
 
   async confirm() {
     if (this._code.length !== 4) {
-      this._showError('Entrez 4 chiffres');
+      this._showError(App.t('pin_error_digits'));
       return;
     }
 
     if (this._attempts >= this._maxAttempts) {
-      this._showError('Trop de tentatives. Veuillez vous adresser à l\'accueil.');
+      this._showError(App.t('pin_error_too_many'));
       return;
     }
 
-    App.showLoading('Vérification du code PIN...');
+    App.showLoading(App.t('loading'));
 
     try {
       const data = await Api.identify(App.state.rfid, this._code);
@@ -65,13 +65,12 @@ const PinScreen = {
 
       if (err.code === 'WRONG_PIN' || err.status === 401) {
         const restant = this._maxAttempts - this._attempts;
-        this._showError('Code PIN incorrect');
+        this._showError(App.t('pin_error_incorrect'));
         if (restant > 0) {
-          document.getElementById('pin-attempts').textContent =
-            `${restant} tentative${restant > 1 ? 's' : ''} restante${restant > 1 ? 's' : ''}`;
+          document.getElementById('pin-attempts').textContent = App.t('pin_error_attempts', { n: restant });
           document.getElementById('pin-attempts').classList.remove('hidden');
         } else {
-          this._showError('Trop de tentatives. Retour à l\'accueil dans 5 secondes.');
+          this._showError(App.t('pin_error_final'));
           setTimeout(() => {
             this.reset();
             this._attempts = 0;
@@ -79,7 +78,7 @@ const PinScreen = {
           }, 5000);
         }
       } else {
-        this._showError('Erreur de connexion. Veuillez réessayer.');
+        this._showError(App.t('rfid_error_server'));
       }
 
       // Reset le code saisi

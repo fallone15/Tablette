@@ -8,7 +8,7 @@ const AppointmentsScreen = {
     list.innerHTML = `
       <div class="service-loading">
         <div class="spinner"></div>
-        <p>Vérification de vos rendez-vous...</p>
+        <p>${App.t('appts_loading')}</p>
       </div>`;
 
     if (!App.state.patient) {
@@ -21,14 +21,12 @@ const AppointmentsScreen = {
       this._appointments = data.appointments || [];
 
       if (this._appointments.length === 0) {
-        // Pas de RDV, on passe à la sélection de service normale
         this.skip();
       } else {
         this.render(this._appointments);
       }
     } catch (err) {
       console.error('Erreur loaded RDV', err);
-      // En cas d'erreur on laisse passer au flux normal par sécurité
       this.skip();
     }
   },
@@ -39,15 +37,20 @@ const AppointmentsScreen = {
 
     appointments.forEach(rdv => {
       const isPaid = rdv.statut === 'confirme';
-      const timeStr = rdv.heure_rdv.substring(0, 5); // ex: 14:30
+      const timeStr = rdv.heure_rdv.substring(0, 5);
 
-      const card = document.createElement('div');
+      const card = document.createElement('button'); // Changed to button for accessibility
       card.className = 'service-card';
-      // Style en ligne pour adapter la carte
       card.style.flexDirection = 'row';
       card.style.alignItems = 'center';
       card.style.gap = '20px';
       card.style.minHeight = '120px';
+      card.style.textAlign = 'inherit'; // Support RTL
+      card.style.width = '100%';
+      card.style.border = '1px solid var(--border)';
+      card.style.background = 'var(--bg-card)';
+      card.style.borderRadius = 'var(--radius-md)';
+      card.style.cursor = 'pointer';
 
       card.innerHTML = `
         <div style="font-size:32px; font-weight:800; color:var(--primary);">${timeStr}</div>
@@ -55,13 +58,11 @@ const AppointmentsScreen = {
           <div style="font-size:18px; font-weight:700;">${rdv.service_nom}</div>
           <div style="color:var(--text-secondary); font-size:14px;">Dr. ${rdv.medecin_prenom} ${rdv.medecin_nom} (${rdv.specialite})</div>
           <div style="margin-top:8px;">
-            ${isPaid 
-              ? '<span class="motif-badge motif-badge-free">✅ Payé en ligne</span>' 
-              : '<span class="motif-badge">💵 À régler sur place</span>'}
+            <span class="motif-badge ${isPaid ? 'motif-badge-free' : ''}">${isPaid ? App.t('status_paid') : App.t('status_unpaid')}</span>
           </div>
         </div>
         <div style="font-size:24px; font-weight:700; color:var(--text-primary);">
-          ${parseFloat(rdv.tarif).toFixed(2)} MAD
+          ${parseFloat(rdv.tarif).toFixed(2)} ${App.t('mad')}
         </div>
       `;
 
@@ -77,13 +78,12 @@ const AppointmentsScreen = {
       tarif: rdv.tarif,
       duree_moyenne: rdv.duree_moyenne
     };
-    App.state.rdvChoisi = rdv; // Sauvegarde du RDV complet
+    App.state.rdvChoisi = rdv;
 
     const isPaid = rdv.statut === 'confirme';
 
     if (isPaid) {
-      // Direct au check-in car déjà payé
-      App.showLoading('Génération de votre ticket...');
+      App.showLoading(App.t('ticket_generating'));
       try {
         const payload = {
           id_patient: App.state.patient.id_patient,
@@ -98,13 +98,15 @@ const AppointmentsScreen = {
           App.state.ticket = res.ticket;
           App.hideLoading();
           App.goTo('ticket');
+        } else {
+          App.hideLoading();
+          App.showError('appointments-error', res.message || 'error_ticket');
         }
       } catch (err) {
         App.hideLoading();
-        App.showError('service-error', 'Erreur lors de la génération du ticket.');
+        App.showError('appointments-error', 'error_ticket');
       }
     } else {
-      // Non payé -> redirection vers écran de paiement
       App.goTo('payment');
     }
   },

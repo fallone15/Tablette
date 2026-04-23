@@ -22,7 +22,7 @@ const RfidScreen = {
       this._timeout--;
       const pct = (this._timeout / 60) * 100;
       bar.style.width = pct + '%';
-      text.textContent = `Retour automatique dans ${this._timeout}s`;
+      text.innerHTML = App.t('rfid_timeout', { n: this._timeout });
 
       if (this._timeout <= 0) {
         clearInterval(this._interval);
@@ -38,11 +38,11 @@ const RfidScreen = {
     const carteRfid = input.value.trim();
 
     if (!carteRfid) {
-      App.showError('rfid-error', 'Veuillez entrer ou scanner un numéro de carte.');
+      App.showError('rfid-error', 'rfid_error_no_card');
       return;
     }
 
-    App.showLoading('Lecture de la carte...');
+    App.showLoading(App.t('loading'));
 
     try {
       const data = await Api.verifyRfid(carteRfid);
@@ -57,14 +57,14 @@ const RfidScreen = {
         App.goTo('pin-entry');
       } else {
         App.hideLoading();
-        App.showError('rfid-error', 'Carte non reconnue. Vérifiez votre carte ou inscrivez-vous en tant que nouveau patient.');
+        App.showError('rfid-error', 'rfid_error_invalid');
       }
     } catch (err) {
       App.hideLoading();
       if (err.status === 404) {
-        App.showError('rfid-error', 'Carte non reconnue. Vérifiez votre carte ou inscrivez-vous en tant que nouveau patient.');
+        App.showError('rfid-error', 'rfid_error_invalid');
       } else {
-        App.showError('rfid-error', 'Erreur de connexion au serveur. Veuillez réessayer.');
+        App.showError('rfid-error', 'rfid_error_server');
       }
     }
   },

@@ -14,13 +14,15 @@ const TicketScreen = {
     document.getElementById('ticket-number').textContent = ticket.numero_file;
 
     // Date et heure du ticket
+    const localeMap = { fr: 'fr-FR', en: 'en-US', ar: 'ar-MA' };
+    const locale = localeMap[App.state.lang] || 'fr-FR';
     const now = new Date();
     document.getElementById('ticket-datetime').innerHTML =
-      `${now.toLocaleDateString('fr-FR')}<br>${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+      `${now.toLocaleDateString(locale)}<br>${now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`;
 
     // Service & Tarif
     document.getElementById('ticket-service').textContent = ticket.service.nom;
-    document.getElementById('ticket-tarif').textContent = `${parseFloat(ticket.service.tarif).toFixed(2)} MAD`;
+    document.getElementById('ticket-tarif').textContent = `${parseFloat(ticket.service.tarif).toFixed(2)} ${App.t('mad')}`;
 
     const docRow = document.getElementById('ticket-medecin-row');
     const salleRow = document.getElementById('ticket-salle-row');
@@ -33,8 +35,8 @@ const TicketScreen = {
 
     if (isCashier) {
       // Configuration Ticket CAISSE
-      typeLabel.textContent = "NUMÉRO DE CAISSE";
-      document.querySelector('.ticket-heading').textContent = "Ticket de Caisse";
+      typeLabel.textContent = App.t('ticket_cashier_label');
+      document.querySelector('.ticket-heading').textContent = App.t('ticket_cashier_title');
       document.querySelector('.ticket-success-icon').textContent = "💵";
 
       docRow.classList.add('hidden');
@@ -43,13 +45,13 @@ const TicketScreen = {
       posWrap.classList.add('hidden');
       alertBox.classList.remove('hidden');
 
-      fMsg1.textContent = "Merci de patienter jusqu'à l'appel de votre numéro à l'accueil.";
-      fMsg2.textContent = "Une fois le règlement effectué, vous recevrez votre ticket de consultation.";
+      fMsg1.textContent = App.t('ticket_msg_cashier1');
+      fMsg2.textContent = App.t('ticket_msg_cashier2');
 
     } else {
       // Configuration Ticket DOCTEUR
-      typeLabel.textContent = "Votre numéro";
-      document.querySelector('.ticket-heading').textContent = "Votre ticket de passage";
+      typeLabel.textContent = App.t('ticket_number_label');
+      document.querySelector('.ticket-heading').textContent = App.t('ticket_success');
       document.querySelector('.ticket-success-icon').textContent = "✅";
 
       docRow.classList.remove('hidden');
@@ -61,19 +63,19 @@ const TicketScreen = {
         existingBadge.remove();
       }
 
-      if (ticket.is_rdv || ticket.paiement === 'CB_BORNE') {
+      if (ticket.is_rdv || ticket.paiement === 'stripe') {
         const badge = document.createElement('span');
         badge.className = 'motif-badge motif-badge-free';
         badge.style.display = 'inline-block';
         badge.style.marginTop = '4px';
-        badge.textContent = ticket.is_rdv ? '✅ Consultation pré-payée' : '✅ Payé par carte';
+        badge.textContent = ticket.is_rdv ? App.t('ticket_prepaid') : App.t('ticket_paid_card');
         alertBox.parentNode.insertBefore(badge, alertBox);
       }
 
       if (ticket.is_rdv) {
-        posWrap.innerHTML = `Heure de RDV respectée`;
+        posWrap.innerHTML = App.t('ticket_rdv_on_time');
       } else {
-        posWrap.innerHTML = `Vous êtes le <strong>N°${ticket.position}</strong> en attente`;
+        posWrap.innerHTML = App.t('ticket_position', { n: ticket.position });
         posWrap.classList.remove('hidden');
       }
 
@@ -81,33 +83,33 @@ const TicketScreen = {
 
       if (ticket.salle) {
         document.getElementById('ticket-salle').textContent =
-          `Salle ${ticket.salle.numero}${ticket.salle.etage != null ? ` — Étage ${ticket.salle.etage}` : ''}`;
+          `${App.t('ticket_room')} ${ticket.salle.numero}${ticket.salle.etage != null ? ` — ${App.t('floor')} ${ticket.salle.etage}` : ''}`;
       } else {
-        document.getElementById('ticket-salle').textContent = 'À déterminer';
+        document.getElementById('ticket-salle').textContent = App.t('tbd');
       }
       salleRow.classList.remove('hidden');
 
       if (ticket.heure_estimee) {
         const he = new Date(ticket.heure_estimee);
         document.getElementById('ticket-heure').textContent =
-          he.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+          he.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
       } else {
-        document.getElementById('ticket-heure').textContent = 'Sous peu';
+        document.getElementById('ticket-heure').textContent = App.t('soon');
       }
 
-      fMsg1.textContent = "Merci de vous installer en salle d'attente.";
-      fMsg2.textContent = "Un soignant vous appellera par votre numéro.";
+      fMsg1.textContent = App.t('ticket_msg_1');
+      fMsg2.textContent = App.t('ticket_msg_2');
     }
 
     // Countdown auto retour accueil
     this._countdown = 60;
     const countdownEl = document.getElementById('ticket-countdown');
-    countdownEl.textContent = this._countdown;
+    countdownEl.innerHTML = App.t('ticket_countdown', { n: this._countdown });
 
     if (this._interval) clearInterval(this._interval);
     this._interval = setInterval(() => {
       this._countdown--;
-      countdownEl.textContent = this._countdown;
+      countdownEl.innerHTML = App.t('ticket_countdown', { n: this._countdown });
       if (this._countdown <= 0) {
         clearInterval(this._interval);
         App.goTo('welcome');

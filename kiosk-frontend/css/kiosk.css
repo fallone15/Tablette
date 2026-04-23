@@ -36,6 +36,7 @@
   --shadow-glow:    0 0 30px var(--primary-glow);
 
   --font:           'Inter', system-ui, sans-serif;
+  --font-ar:        'Cairo', sans-serif;
   --touch-min:      72px; /* taille minimale des éléments tactiles */
 }
 
@@ -51,6 +52,10 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   user-select: none;
+}
+
+body[dir="rtl"] {
+  font-family: var(--font-ar);
 }
 
 /* ─── Fond Orbs Animés ───────────────────────────────────────────────────── */
@@ -113,6 +118,52 @@ html, body {
   font-size: 13px; color: var(--text-secondary); text-align: right;
   margin-top: 2px; text-transform: capitalize;
 }
+
+body[dir="rtl"] .date-display { text-align: left; }
+
+/* ─── Language Switcher ─── */
+.lang-switcher {
+  display: flex; gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px; border-radius: 50px;
+  border: 1px solid var(--border);
+}
+
+.lang-btn {
+  padding: 8px 16px; border-radius: 50px;
+  background: transparent; border: none;
+  color: var(--text-muted); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  font-family: var(--font);
+}
+
+.lang-btn:hover { color: var(--text-primary); }
+
+.lang-btn.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.topbar-divider {
+  width: 1px; height: 32px;
+  background: var(--border);
+  margin: 0 20px;
+}
+
+.topbar-right { display: flex; align-items: center; }
+
+/* ─── RTL Layout Adjustments ─── */
+body[dir="rtl"] .welcome-card { text-align: right; flex-direction: row-reverse; }
+body[dir="rtl"] .card-arrow { transform: rotate(180deg); }
+body[dir="rtl"] .back-btn { align-self: flex-end; }
+body[dir="rtl"] .ticket-date-time { text-align: left; }
+body[dir="rtl"] .ticket-detail-row { flex-direction: row-reverse; }
+body[dir="rtl"] .ticket-detail-row div { text-align: right; }
+body[dir="rtl"] .topbar-left { order: 2; }
+body[dir="rtl"] .topbar-right { order: 1; flex-direction: row-reverse; }
+body[dir="rtl"] .logo { flex-direction: row-reverse; }
+body[dir="rtl"] .logo-text { text-align: right; }
 
 /* ─── Écrans (SPA) ───────────────────────────────────────────────────────── */
 main#app {
