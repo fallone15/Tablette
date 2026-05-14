@@ -94,12 +94,13 @@ const RfidScreen = {
         this._setReaderStatus('ready');
       }
 
-      if (msg.type === 'card_inserted') {
+    if (msg.type === 'card_inserted') {
         if (msg.cardId) {
           const input = document.getElementById('rfid-input');
           input.value = msg.cardId;
           this._setReaderStatus('reading');
-          setTimeout(() => RfidScreen.submit(), 400);
+          // Passer 'true' pour indiquer que c'est un scan automatique (bypasse le PIN)
+          setTimeout(() => RfidScreen.submit(true), 400);
         } else {
           this._setReaderStatus('error');
           App.showError('rfid-error', 'rfid_error_reader');
@@ -150,7 +151,7 @@ const RfidScreen = {
     if (subtitle) subtitle.textContent = s.text;
   },
 
-  async submit() {
+  async submit(isAutoScan = false) {
     const input = document.getElementById('rfid-input');
     const carteRfid = input.value.trim();
 
@@ -162,23 +163,38 @@ const RfidScreen = {
     App.showLoading(App.t('loading'));
 
     try {
-      const data = await Api.verifyRfid(carteRfid);
+      if (isAutoScan) {
+        // Mode scan automatique : on bypasse le code PIN
+        const data = await Api.identify(carteRfid, null, true);
+        if (data.success) {
+          App.state.rfid = carteRfid;
+          App.state.patient = data.patient;
+          App.hideLoading();
 
-      if (data.found) {
-        App.state.rfid = carteRfid;
-        App.hideLoading();
-
-        // Pré-remplir le prénom sur l'écran PIN
-        document.getElementById('pin-prenom').textContent = data.prenom || 'Patient';
-
-        App.goTo('pin-entry');
+          // Mettre à jour l'écran de confirmation et y aller directement
+          ConfirmScreen.populate(data.patient);
+          App.goTo('patient-confirm');
+        }
       } else {
-        App.hideLoading();
-        App.showError('rfid-error', 'rfid_error_invalid');
+        // Mode manuel : on vérifie juste que le RFID existe, puis on demande le PIN
+        const data = await Api.verifyRfid(carteRfid);
+
+        if (data.found) {
+          App.state.rfid = carteRfid;
+          App.hideLoading();
+
+          // Pré-remplir le prénom sur l'écran PIN
+          document.getElementById('pin-prenom').textContent = data.prenom || 'Patient';
+
+          App.goTo('pin-entry');
+        } else {
+          App.hideLoading();
+          App.showError('rfid-error', 'rfid_error_invalid');
+        }
       }
     } catch (err) {
       App.hideLoading();
-      if (err.status === 404) {
+      if (err.status === 404 || err.code === 'CARD_NOT_FOUND') {
         App.showError('rfid-error', 'rfid_error_invalid');
       } else {
         App.showError('rfid-error', 'rfid_error_server');

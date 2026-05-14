@@ -8,10 +8,13 @@ const { pool } = require('../server');
  * Identification du patient par carte RFID + code PIN
  */
 router.post('/identify', async (req, res) => {
-  const { carte_rfid, code_pin } = req.body;
+  const { carte_rfid, code_pin, auto_scan } = req.body;
 
-  if (!carte_rfid || !code_pin) {
-    return res.status(400).json({ error: 'RFID et code PIN requis' });
+  if (!carte_rfid) {
+    return res.status(400).json({ error: 'RFID requis' });
+  }
+  if (!auto_scan && !code_pin) {
+    return res.status(400).json({ error: 'Code PIN requis' });
   }
 
   try {
@@ -30,11 +33,13 @@ router.post('/identify', async (req, res) => {
 
     const patient = result.rows[0];
 
-    // Vérification du code PIN
-    const pinValide = await bcrypt.compare(String(code_pin), patient.code_pin);
+    // Vérification du code PIN (sauf si auto_scan)
+    if (!auto_scan) {
+      const pinValide = await bcrypt.compare(String(code_pin), patient.code_pin);
 
-    if (!pinValide) {
-      return res.status(401).json({ error: 'Code PIN incorrect', code: 'WRONG_PIN' });
+      if (!pinValide) {
+        return res.status(401).json({ error: 'Code PIN incorrect', code: 'WRONG_PIN' });
+      }
     }
 
     // Retourner les données sans le code_pin

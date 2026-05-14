@@ -28,9 +28,9 @@ const Api = {
     return this.post('/verify-rfid', { carte_rfid });
   },
 
-  /** Identifier le patient (RFID + PIN) */
-  identify(carte_rfid, code_pin) {
-    return this.post('/identify', { carte_rfid, code_pin });
+  /** Identifier le patient (RFID + PIN ou RFID seul si auto_scan) */
+  identify(carte_rfid, code_pin, auto_scan = false) {
+    return this.post('/identify', { carte_rfid, code_pin, auto_scan });
   },
 
   /** Récupérer la liste des services */
