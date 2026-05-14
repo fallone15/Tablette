@@ -1,5 +1,103 @@
 /* ─── app.js — Routeur principal et état global ─── */
 
+/* ─── InactivityManager — Retour auto à l'accueil après inactivité ─── */
+const InactivityManager = {
+  _warningTimer: null,   // Lance le popup d'avertissement
+  _cancelTimer: null,    // Lance le retour forcé à l'accueil
+  _popup: null,          // Référence au popup DOM
+  _countdownInterval: null,
+
+  WARN_AFTER_MS:   45_000, // Afficher le warning après 45s
+  CANCEL_AFTER_MS: 60_000, // Retour accueil après 60s (15s après le warning)
+
+  // Écrans sur lesquels le timer NE s'applique PAS
+  EXCLUDED_SCREENS: ['welcome', 'ticket'],
+
+  start() {
+    this._bindEvents();
+  },
+
+  _bindEvents() {
+    const reset = () => this.reset();
+    ['touchstart', 'touchend', 'mousedown', 'click', 'keydown'].forEach(evt =>
+      document.addEventListener(evt, reset, { passive: true })
+    );
+  },
+
+  reset() {
+    this._clearAll();
+    // Ne pas activer le timer sur l'accueil ou le ticket
+    if (InactivityManager.EXCLUDED_SCREENS.includes(App.currentScreen)) return;
+
+    InactivityManager._warningTimer = setTimeout(() => {
+      InactivityManager._showWarning();
+    }, InactivityManager.WARN_AFTER_MS);
+  },
+
+  _showWarning() {
+    // Supprimer un ancien popup si présent
+    this._removePopup();
+
+    let remaining = 15;
+
+    const popup = document.createElement('div');
+    popup.id = 'inactivity-overlay';
+    popup.innerHTML = `
+      <div class="inactivity-box">
+        <div class="inactivity-icon">⏳</div>
+        <h2 class="inactivity-title">Toujours là ?</h2>
+        <p class="inactivity-msg">Retour à l'accueil dans</p>
+        <div class="inactivity-countdown"><span id="inactivity-seconds">${remaining}</span>s</div>
+        <button class="inactivity-btn" id="inactivity-continue-btn">Je suis là — Continuer</button>
+      </div>
+    `;
+    document.body.appendChild(popup);
+    this._popup = popup;
+
+    // Forcer un reflow pour l'animation CSS
+    requestAnimationFrame(() => popup.classList.add('visible'));
+
+    // Bouton "Continuer"
+    document.getElementById('inactivity-continue-btn').addEventListener('click', () => {
+      this._removePopup();
+      this.reset();
+    });
+
+    // Countdown 15s → retour accueil
+    this._countdownInterval = setInterval(() => {
+      remaining--;
+      const el = document.getElementById('inactivity-seconds');
+      if (el) el.textContent = remaining;
+      if (remaining <= 0) {
+        this._clearAll();
+        this._removePopup();
+        App.goTo('welcome');
+      }
+    }, 1000);
+  },
+
+  _removePopup() {
+    if (this._popup) {
+      this._popup.remove();
+      this._popup = null;
+    }
+  },
+
+  _clearAll() {
+    clearTimeout(this._warningTimer);
+    clearTimeout(this._cancelTimer);
+    clearInterval(this._countdownInterval);
+    this._warningTimer = null;
+    this._cancelTimer = null;
+    this._countdownInterval = null;
+  },
+
+  pause() {
+    this._clearAll();
+    this._removePopup();
+  },
+};
+
 const App = {
   // État global partagé entre tous les écrans
   state: {
@@ -29,13 +127,10 @@ const App = {
     setInterval(() => this.updateClock(), 1000);
     this.goTo('welcome');
     
-    // Écouter la touche Entrée sur le champ RFID
-    const rfidInput = document.getElementById('rfid-input');
-    if (rfidInput) {
-      rfidInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') RfidScreen.submit();
-      });
-    }
+    // Démarrer le gestionnaire d'inactivité (style GAB)
+    InactivityManager.start();
+
+    // Écouter la touche Entrée sur le champ RFID géré directement dans RfidScreen.onEnter()
   },
 
   // --- Système de Traduction (i18n) ---
@@ -99,6 +194,15 @@ const App = {
       this._history.push(this.currentScreen);
     }
 
+    // Appeler onLeave sur l'écran qui part (si défini)
+    const screenHandlers = {
+      'rfid-scan': typeof RfidScreen !== 'undefined' ? RfidScreen : null,
+    };
+    const leavingHandler = screenHandlers[this.currentScreen];
+    if (leavingHandler && typeof leavingHandler.onLeave === 'function') {
+      leavingHandler.onLeave();
+    }
+
     // Masquer l'écran actuel
     const current = document.querySelector('.screen.active');
     if (current) current.classList.remove('active');
@@ -116,6 +220,9 @@ const App = {
       this.resetState();
       this.setLanguage('fr'); // Retour au français à chaque nouvelle session
       this._history = [];
+      InactivityManager.pause(); // Pas de timer sur l'accueil
+    } else {
+      InactivityManager.reset(); // (Re)démarrer le timer sur tous les autres écrans
     }
     
     // Actions spécifiques à l'écran

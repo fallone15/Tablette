@@ -24,14 +24,15 @@ const translations = {
     'btn_catalog': "Catalogue et Horaires",
 
     // RFID Screen
-    'rfid_title': "Approchez votre carte du lecteur",
-    'rfid_subtitle': "Placez la carte dans la zone de lecture ci-dessus",
+    'rfid_title': "Insérez votre carte dans le lecteur",
+    'rfid_subtitle': "Placez la puce en contact avec le lecteur",
     'rfid_manual': "— ou saisir manuellement (test) —",
     'rfid_placeholder': "N° carte (ex: PAT9660)",
     'rfid_validate': "Valider",
     'rfid_timeout': "Retour automatique dans {n}s",
     'rfid_error_no_card': "Veuillez entrer ou scanner un numéro de carte.",
     'rfid_error_invalid': "Carte non reconnue. Vérifiez votre carte ou inscrivez-vous en tant que nouveau patient.",
+    'rfid_error_reader': "Impossible de lire la carte. Vérifiez que vous l'avez bien insérée et que le lecteur est prêt.",
     'rfid_error_server': "Erreur de connexion au serveur. Veuillez réessayer.",
 
     // PIN Screen
@@ -166,14 +167,15 @@ const translations = {
     'btn_catalog': "Catalog & Schedules",
 
     // RFID Screen
-    'rfid_title': "Approach your card to the reader",
-    'rfid_subtitle': "Place the card in the reading zone above",
+    'rfid_title': "Insert your card into the reader",
+    'rfid_subtitle': "Place the chip in contact with the reader",
     'rfid_manual': "— or enter manually (test) —",
     'rfid_placeholder': "Card N° (ex: PAT9660)",
     'rfid_validate': "Validate",
     'rfid_timeout': "Automatic return in {n}s",
     'rfid_error_no_card': "Please enter or scan a card number.",
     'rfid_error_invalid': "Card not recognized. Check your card or register as a new patient.",
+    'rfid_error_reader': "Unable to read the card. Make sure it is inserted correctly and the reader is ready.",
     'rfid_error_server': "Server connection error. Please try again.",
 
     // PIN Screen

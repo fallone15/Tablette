@@ -261,14 +261,20 @@ main#app {
    ═══════════════════════════════════════════════════════════════════════════ */
 .welcome-content {
   display: flex; flex-direction: column; align-items: center;
-  gap: 32px; width: 100%; max-width: 820px; padding: 20px;
+  gap: clamp(14px, 2.5vh, 28px);
+  width: 100%; max-width: 820px;
+  padding: 8px 20px 80px; /* bottom padding pour éviter le bouton flottant */
+  box-sizing: border-box;
 }
 .welcome-hero {
-  position: relative; width: 120px; height: 120px;
+  position: relative;
+  width: clamp(70px, 10vh, 100px);
+  height: clamp(70px, 10vh, 100px);
   display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 .pulse-ring {
-  position: absolute; inset: -20px; border-radius: 50%;
+  position: absolute; inset: -16px; border-radius: 50%;
   border: 2px solid var(--primary);
   animation: pulseRing 2.5s ease-out infinite;
 }
@@ -276,23 +282,32 @@ main#app {
   0%   { transform: scale(0.8); opacity: 1; }
   100% { transform: scale(1.6); opacity: 0; }
 }
-.welcome-icon { font-size: 72px; animation: bounce 3s ease-in-out infinite; }
+.welcome-icon {
+  font-size: clamp(40px, 7vh, 64px);
+  animation: bounce 3s ease-in-out infinite;
+  line-height: 1;
+}
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-8px); }
+  50%       { transform: translateY(-6px); }
 }
 .welcome-title {
-  font-size: clamp(28px, 4vw, 44px); font-weight: 900;
+  font-size: clamp(22px, 3.5vw, 40px); font-weight: 900;
   background: linear-gradient(135deg, #fff 30%, var(--accent));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  text-align: center;
+  text-align: center; line-height: 1.2;
 }
-.welcome-subtitle { font-size: 18px; color: var(--text-secondary); text-align: center; }
+.welcome-subtitle {
+  font-size: clamp(14px, 2vw, 18px);
+  color: var(--text-secondary); text-align: center;
+  margin-top: -8px;
+}
 
-.welcome-cards { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+.welcome-cards { display: flex; flex-direction: column; gap: clamp(12px, 2vh, 20px); width: 100%; }
 .welcome-card {
-  display: flex; align-items: center; gap: 24px;
-  padding: 28px 32px; border-radius: var(--radius-lg);
+  display: flex; align-items: center; gap: 20px;
+  padding: clamp(16px, 2.5vh, 26px) 28px;
+  border-radius: var(--radius-lg);
   background: var(--bg-card); border: 1px solid var(--border);
   cursor: pointer; text-align: left; width: 100%;
   transition: all 0.25s ease; position: relative; overflow: hidden;
@@ -318,13 +333,23 @@ main#app {
   border-color: var(--accent); box-shadow: var(--shadow-card);
   transform: translateY(-3px);
 }
-.card-icon { font-size: 48px; flex-shrink: 0; }
-.card-body { flex: 1; }
-.card-body h2 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
-.card-body p  { font-size: 15px; color: var(--text-secondary); }
-.card-arrow   { font-size: 28px; color: var(--primary); flex-shrink: 0; }
+.card-icon {
+  font-size: clamp(32px, 5vh, 48px);
+  flex-shrink: 0;
+  line-height: 1;
+  width: clamp(40px, 6vh, 56px);
+  text-align: center;
+}
+.card-body { flex: 1; min-width: 0; }
+.card-body h2 {
+  font-size: clamp(16px, 2.2vw, 22px);
+  font-weight: 700; color: var(--text-primary); margin-bottom: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-body p  { font-size: clamp(12px, 1.6vw, 15px); color: var(--text-secondary); }
+.card-arrow   { font-size: clamp(20px, 3vw, 28px); color: var(--primary); flex-shrink: 0; }
 
-.welcome-help { font-size: 14px; color: var(--text-muted); text-align: center; }
+.welcome-help { font-size: 13px; color: var(--text-muted); text-align: center; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ÉCRAN 2 — SCAN RFID
@@ -716,3 +741,83 @@ main#app {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INACTIVITY OVERLAY — Popup retour accueil automatique (style GAB)
+   ═══════════════════════════════════════════════════════════════════════════ */
+#inactivity-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  background: rgba(2, 12, 24, 0.75);
+  backdrop-filter: blur(16px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+#inactivity-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.inactivity-box {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-lg);
+  padding: 48px 56px;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+  max-width: 460px; width: 90%;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,180,216,0.2);
+  animation: inactivitySlideIn 0.4s ease;
+}
+@keyframes inactivitySlideIn {
+  from { transform: translateY(-30px) scale(0.95); opacity: 0; }
+  to   { transform: translateY(0)     scale(1);    opacity: 1; }
+}
+
+.inactivity-icon {
+  font-size: 56px;
+  animation: swing 1.4s ease-in-out infinite;
+}
+@keyframes swing {
+  0%, 100% { transform: rotate(-15deg); }
+  50%       { transform: rotate(15deg); }
+}
+
+.inactivity-title {
+  font-size: 32px; font-weight: 800;
+  background: linear-gradient(135deg, #fff 30%, var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.inactivity-msg {
+  font-size: 17px; color: var(--text-secondary);
+}
+
+.inactivity-countdown {
+  font-size: 72px; font-weight: 900; line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(135deg, var(--danger), #ff6b6b);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: pulse 1s ease-in-out infinite;
+  min-width: 120px;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.08); }
+}
+
+.inactivity-btn {
+  margin-top: 8px;
+  padding: 18px 40px; border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border: none; color: #fff;
+  font-size: 18px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 24px rgba(0,180,216,0.4);
+  min-height: var(--touch-min); width: 100%;
+}
+.inactivity-btn:hover, .inactivity-btn:active {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0,180,216,0.5);
+}

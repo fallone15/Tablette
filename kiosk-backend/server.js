@@ -1,7 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const path = require('path');
 const { Pool } = require('pg');
+const { startCardWebSocket, startCardReader } = require('./services/cardReader');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -44,6 +47,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// ─── Servir les fichiers statiques du frontend ──────────────────────────────────
+app.use(express.static(path.join(__dirname, '../kiosk-frontend')));
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 const authRoutes = require('./routes/auth');
 const servicesRoutes = require('./routes/services');
@@ -72,8 +78,17 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Démarrage ────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+const server = http.createServer(app);
+
+// WebSocket lecteur carte à puce
+startCardWebSocket(server);
+
+// Démarrage écoute PC/SC (Gemalto + ACOS)
+startCardReader();
+
+server.listen(PORT, () => {
   console.log(`\n🏥 CareTrack Kiosk API démarrée`);
   console.log(`🚀 http://localhost:${PORT}`);
-  console.log(`📋 Health: http://localhost:${PORT}/health\n`);
+  console.log(`📋 Health: http://localhost:${PORT}/health`);
+  console.log(`🃏 CardReader WS: ws://localhost:${PORT}/ws/card\n`);
 });
