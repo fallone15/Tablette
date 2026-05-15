@@ -224,7 +224,9 @@ const PaymentScreen = {
     
     try {
       const payload = {
-        id_service: App.state.serviceChoisi.id_service
+        id_service: App.state.serviceChoisi.id_service,
+        id_patient: App.state.patient ? App.state.patient.id_patient : null,
+        carte_rfid: App.state.patient ? App.state.patient.carte_rfid : null
       };
       
       const res = await Api.cashierTicket(payload);

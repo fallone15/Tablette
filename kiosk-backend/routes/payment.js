@@ -6,13 +6,28 @@ const { pool } = require('../server');
 const router = express.Router();
 
 // ─── Utilitaires ──────────────────────────────────────────────────────────────
-function generateNumeroFile(prefix = 'K-') {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let result = prefix;
-  for (let i = 0; i < 6; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
+// ─── Génération numéro de file séquentiel par service (ex: GYN-1) ───────────
+async function generateServiceTicketNumber(id_service) {
+  try {
+    // 1. Récupérer le code du service
+    const serviceRes = await pool.query('SELECT code FROM public.services WHERE id_service = $1', [id_service]);
+    const code = serviceRes.rows[0]?.code || 'GEN';
+
+    // 2. Compter le nombre de patients aujourd'hui pour ce service (Consultations + Tickets)
+    const countRes = await pool.query(`
+      SELECT (
+        (SELECT COUNT(*) FROM public.consultations WHERE id_service = $1 AND DATE(heure_arrivee) = CURRENT_DATE)
+        +
+        (SELECT COUNT(*) FROM public.tickets WHERE id_service = $1 AND DATE(heure_arrivee) = CURRENT_DATE)
+      ) AS total
+    `, [id_service]);
+
+    const nextNumber = parseInt(countRes.rows[0].total) + 1;
+    return `${code}-${nextNumber}`;
+  } catch (err) {
+    console.error('Erreur génération numéro file:', err);
+    return 'ERR-' + Math.floor(Math.random() * 1000);
   }
-  return result;
 }
 
 async function findMedecinDisponible(id_service) {
@@ -159,19 +174,8 @@ router.post('/confirm', async (req, res) => {
       }
     }
 
-    // Générer un numéro de file unique
-    let numeroFile;
-    let tentatives = 0;
-    do {
-      numeroFile = generateNumeroFile();
-      const check = await pool.query('SELECT 1 FROM public.consultations WHERE numero_file = $1', [numeroFile]);
-      if (check.rows.length === 0) break;
-      tentatives++;
-    } while (tentatives < 10);
-
-    if (tentatives >= 10) {
-      return res.status(500).json({ success: false, message: 'Impossible de générer un numéro de file' });
-    }
+    // Générer le numéro de ticket séquentiel (ex: GYN-1)
+    const numeroFile = await generateServiceTicketNumber(id_service);
 
     // Heure estimée
     const heureEstimee = await calcHeurEstimee(medecin.id_medecin, service.duree_moyenne);
@@ -194,7 +198,7 @@ router.post('/confirm', async (req, res) => {
           id_service, id_medecin, id_salle,
           numero_file, heure_arrivee, heure_estimee,
           statut, motif, montant_paye, mode_paiement
-        ) VALUES ($1, $2, $3, $4, NOW(), $5, 'en_attente', $6, $7, 'stripe')
+        ) VALUES ($1, $2, $3, $4, NOW(), $5, 'en_cours', $6, $7, 'stripe')
         RETURNING *
       `, [
         id_service, medecin.id_medecin, salleId,
@@ -206,7 +210,7 @@ router.post('/confirm', async (req, res) => {
           id_patient, id_service, id_medecin, id_salle,
           numero_file, heure_arrivee, heure_estimee,
           statut, motif, montant_paye, mode_paiement
-        ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, 'en_attente', $7, $8, 'stripe')
+        ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, 'en_cours', $7, $8, 'stripe')
         RETURNING *
       `, [
         id_patient || null, id_service, medecin.id_medecin, salleId,

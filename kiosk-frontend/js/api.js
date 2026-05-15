@@ -1,7 +1,8 @@
 /* ─── api.js — Couche d'appel HTTP vers le backend kiosk ─── */
 
-const API_BASE = 'http://localhost:3001/api/kiosk';
-const API_PAYMENT = 'http://localhost:3001/api/payment';
+const hostname = window.location.hostname;
+const API_BASE = `http://${hostname}:3001/api/kiosk`;
+const API_PAYMENT = `http://${hostname}:3001/api/payment`;
 
 const Api = {
 

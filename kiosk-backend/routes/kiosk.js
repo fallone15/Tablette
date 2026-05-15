@@ -2,14 +2,28 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../server');
 
-// ─── Génération numéro de file unique ────────────────────────────────────────
-function generateNumeroFile(prefix = 'K-') {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let result = prefix;
-  for (let i = 0; i < 6; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
+// ─── Génération numéro de file séquentiel par service (ex: GYN-1) ───────────
+async function generateServiceTicketNumber(id_service) {
+  try {
+    // 1. Récupérer le code du service
+    const serviceRes = await pool.query('SELECT code FROM public.services WHERE id_service = $1', [id_service]);
+    const code = serviceRes.rows[0]?.code || 'GEN';
+
+    // 2. Compter le nombre de patients aujourd'hui pour ce service (Consultations + Tickets)
+    const countRes = await pool.query(`
+      SELECT (
+        (SELECT COUNT(*) FROM public.consultations WHERE id_service = $1 AND DATE(heure_arrivee) = CURRENT_DATE)
+        +
+        (SELECT COUNT(*) FROM public.tickets WHERE id_service = $1 AND DATE(heure_arrivee) = CURRENT_DATE)
+      ) AS total
+    `, [id_service]);
+
+    const nextNumber = parseInt(countRes.rows[0].total) + 1;
+    return `${code}-${nextNumber}`;
+  } catch (err) {
+    console.error('Erreur génération numéro file:', err);
+    return 'ERR-' + Math.floor(Math.random() * 1000);
   }
-  return result;
 }
 
 // ─── Trouver un médecin disponible pour un service ───────────────────────────
@@ -228,35 +242,36 @@ router.post('/checkin', async (req, res) => {
 
     let numeroFile;
     let tentatives = 0;
-    const tableDest = est_visiteur ? 'public.tickets' : 'public.consultations';
     
-    do {
-      numeroFile = generateNumeroFile();
-      const checkConsult = await pool.query('SELECT 1 FROM public.consultations WHERE numero_file = $1', [numeroFile]);
-      const checkTicket = await pool.query('SELECT 1 FROM public.tickets WHERE numero_file = $1', [numeroFile]);
-      if (checkConsult.rows.length === 0 && checkTicket.rows.length === 0) break;
-      tentatives++;
-    } while (tentatives < 10);
+    // 🚀 REDIRECTION CAISSE : Si paiement en espèces, tout va dans la table TICKETS
+    const goesToTickets = est_visiteur || mode_paiement === 'especes';
+    
+    // Générer le numéro de ticket séquentiel (ex: GYN-1)
+    numeroFile = await generateServiceTicketNumber(id_service);
 
     const prefix_motif = id_rendez_vous ? `[RDV WEB #${id_rendez_vous}] ` : '';
-    const final_motif = motif ? (prefix_motif + motif) : (prefix_motif + (est_visiteur ? 'Passage borne (visiteur)' : 'Passage borne'));
+    const patient_info = (!est_visiteur && patient_id) ? `(Patient ID: ${patient_id}) ` : '';
+    const final_motif = motif ? (prefix_motif + patient_info + motif) : (prefix_motif + patient_info + (est_visiteur ? 'Passage borne (visiteur)' : 'Passage borne'));
 
     let insertionResult;
-    if (est_visiteur) {
-      // Insertion anonyme dans la table TICKETS
+    if (goesToTickets) {
+      // Insertion dans la table TICKETS (pour Guest ou Patient payant en espèces)
       insertionResult = await pool.query(`
         INSERT INTO public.tickets (
           id_service, id_medecin, id_salle,
           numero_file, heure_arrivee, heure_estimee,
-          statut, motif, montant_paye, mode_paiement
-        ) VALUES ($1, $2, $3, $4, NOW(), $5, 'en_attente', $6, $7, $8)
+          statut, motif, montant_paye, mode_paiement, type_client
+        ) VALUES ($1, $2, $3, $4, NOW(), $5, 'en_attente', $6, $7, $8, $9)
         RETURNING *
       `, [
-        id_service, medecin.id_medecin, salle ? salle.id_salle : null,
-        numeroFile, heureEstimee, final_motif, service.tarif, mode_paiement || 'CB'
+        id_service, medecin ? medecin.id_medecin : null, salle ? salle.id_salle : null,
+        numeroFile, heureEstimee, final_motif, 
+        (mode_paiement === 'especes' ? null : service.tarif), // Nul si espèces
+        mode_paiement || 'CB',
+        est_visiteur ? 'GUEST' : (req.body.carte_rfid || 'PATIENT') // Stocker le numéro RFID
       ]);
     } else {
-      // Insertion classique dans CONSULTATIONS
+      // Insertion classique dans CONSULTATIONS (Payé en ligne ou déjà payé)
       insertionResult = await pool.query(`
         INSERT INTO public.consultations (
           id_patient, id_service, id_medecin, id_salle,
@@ -310,19 +325,28 @@ router.post('/checkin', async (req, res) => {
  * Génère un ticket de caisse pour ceux devant régler en espèces.
  */
 router.post('/cashier-ticket', async (req, res) => {
-  const { id_service } = req.body;
-  
-  if (!id_service) {
-    return res.status(400).json({ error: 'Service requis pour ticket de caisse' });
-  }
-
-  try {
-    const serviceRes = await pool.query('SELECT * FROM public.services WHERE id_service = $1', [id_service]);
-    if (serviceRes.rows.length === 0) return res.status(404).json({ error: 'Service introuvable' });
-    const service = serviceRes.rows[0];
-
-    const numeroFile = generateNumeroFile('C-');
+    const { id_service, id_patient, carte_rfid } = req.body;
     
+    if (!id_service) {
+      return res.status(400).json({ error: 'Service requis pour ticket de caisse' });
+    }
+
+    try {
+      const serviceRes = await pool.query('SELECT * FROM public.services WHERE id_service = $1', [id_service]);
+      if (serviceRes.rows.length === 0) return res.status(404).json({ error: 'Service introuvable' });
+      const service = serviceRes.rows[0];
+
+      // Générer le numéro de ticket séquentiel (ex: GYN-1)
+      const numeroFile = await generateServiceTicketNumber(id_service);
+      
+      // On utilise le numéro de carte RFID si le patient est identifié, sinon 'GUEST'
+      const typeClient = carte_rfid || 'GUEST';
+
+      await pool.query(`
+        INSERT INTO public.tickets (numero_file, id_service, statut, type_client, id_patient, motif)
+        VALUES ($1, $2, 'en_attente', $3, $4, $5)
+      `, [numeroFile, id_service, typeClient, id_patient || null, service.nom]);
+
     res.json({
       success: true,
       ticket: {
