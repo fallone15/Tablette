@@ -232,6 +232,9 @@ const App = {
     if (screenName === 'rfid-scan') {
       RfidScreen.onEnter();
     }
+    if (screenName === 'pin-entry') {
+      PinScreen.onEnter();
+    }
     if (screenName === 'guest-flow') {
       GuestScreen.onEnter();
     }

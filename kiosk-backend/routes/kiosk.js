@@ -198,6 +198,12 @@ router.post('/checkin', async (req, res) => {
     let medecin = null;
     let rdvHeure = null;
     let rdvFound = false;
+    // Normaliser le mode de paiement pour la BDD
+    // La table `consultations` accepte : 'CB', 'especes', 'mutuelle', 'cheque'
+    // 'stripe' et 'EN_LIGNE' correspondent à un paiement par carte bancaire → 'CB'
+    const normalizedModePaiement = ['especes', 'mutuelle', 'cheque'].includes(mode_paiement)
+      ? mode_paiement
+      : 'CB'; // stripe / EN_LIGNE / CB / tout autre → carte bancaire
 
     // Si lié à un RDV existant
     if (id_rendez_vous) {
@@ -244,7 +250,7 @@ router.post('/checkin', async (req, res) => {
     let tentatives = 0;
     
     // 🚀 REDIRECTION CAISSE : Si paiement en espèces, tout va dans la table TICKETS
-    const goesToTickets = est_visiteur || mode_paiement === 'especes';
+    const goesToTickets = est_visiteur || normalizedModePaiement === 'especes';
     
     // Générer le numéro de ticket séquentiel (ex: GYN-1)
     numeroFile = await generateServiceTicketNumber(id_service);
@@ -266,8 +272,8 @@ router.post('/checkin', async (req, res) => {
       `, [
         id_service, medecin ? medecin.id_medecin : null, salle ? salle.id_salle : null,
         numeroFile, heureEstimee, final_motif, 
-        (mode_paiement === 'especes' ? null : service.tarif), // Nul si espèces
-        mode_paiement || 'CB',
+        (normalizedModePaiement === 'especes' ? null : service.tarif), // Nul si espèces
+        normalizedModePaiement,
         est_visiteur ? 'GUEST' : (req.body.carte_rfid || 'PATIENT') // Stocker le numéro RFID
       ]);
     } else {
@@ -281,7 +287,7 @@ router.post('/checkin', async (req, res) => {
         RETURNING *
       `, [
         patient_id, id_service, medecin.id_medecin, salle ? salle.id_salle : null,
-        numeroFile, heureEstimee, final_motif, service.tarif, mode_paiement || 'CB'
+        numeroFile, heureEstimee, final_motif, service.tarif, normalizedModePaiement
       ]);
     }
 
@@ -295,7 +301,7 @@ router.post('/checkin', async (req, res) => {
 
     // Mettre à jour le statut du RDV si présent pour éviter les doubles check-ins
     if (id_rendez_vous) {
-      await pool.query('UPDATE public.rendez_vous SET statut = \'arrive\' WHERE id = $1', [id_rendez_vous]);
+      await pool.query('UPDATE public.rendez_vous SET statut = \'confirme\' WHERE id = $1', [id_rendez_vous]);
     }
 
     res.json({

@@ -91,7 +91,7 @@ const AppointmentsScreen = {
           id_rendez_vous: rdv.id_rendez_vous,
           est_visiteur: false,
           motif: rdv.motif,
-          mode_paiement: 'EN_LIGNE'
+          mode_paiement: 'stripe'
         };
         const res = await Api.checkin(payload);
         if (res.success) {

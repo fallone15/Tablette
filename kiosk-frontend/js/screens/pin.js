@@ -27,6 +27,13 @@ const PinScreen = {
     });
   },
 
+  onEnter() {
+    // Réinitialiser le compteur à chaque nouvelle session
+    this._attempts = 0;
+    this.reset();
+    document.getElementById('pin-attempts')?.classList.add('hidden');
+  },
+
   reset() {
     this._code = '';
     this._updateDots();

@@ -249,7 +249,7 @@ router.post('/confirm', async (req, res) => {
 
     // Mettre à jour le statut du RDV si présent
     if (id_rendez_vous) {
-      await pool.query('UPDATE public.rendez_vous SET statut = \'arrive\' WHERE id = $1', [id_rendez_vous]);
+      await pool.query('UPDATE public.rendez_vous SET statut = \'confirme\', montant_total = $1 WHERE id = $2', [service.tarif, id_rendez_vous]);
     }
   } catch (error) {
     console.error('❌ Erreur confirmation paiement:', error.message, error.detail);
