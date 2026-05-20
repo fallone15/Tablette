@@ -61,6 +61,34 @@ app.use('/api/kiosk', servicesRoutes);
 app.use('/api/kiosk', kioskRoutes);
 app.use('/api/payment', paymentRoutes);
 
+// ─── Enregistrement audio personnalisé ─────────────────────────────────────────
+app.post('/api/audio/upload', express.raw({ type: 'audio/*', limit: '20mb' }), (req, res) => {
+  const { lang, key } = req.query;
+  if (!lang || !key) {
+    return res.status(400).json({ error: 'Langue et clé requises' });
+  }
+
+  const fs = require('fs');
+  const dir = path.join(__dirname, '../kiosk-frontend/audio', lang);
+
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    const filePath = path.join(dir, `${key}.mp3`);
+
+    fs.writeFile(filePath, req.body, (err) => {
+      if (err) {
+        console.error("❌ Erreur écriture audio:", err);
+        return res.status(500).json({ error: "Impossible de sauvegarder le fichier audio" });
+      }
+      console.log(`🎙️ Audio sauvegardé : ${filePath} (${req.body.length} octets)`);
+      res.json({ success: true, path: `/audio/${lang}/${key}.mp3` });
+    });
+  } catch (err) {
+    console.error("❌ Erreur serveur dossier audio:", err);
+    res.status(500).json({ error: "Erreur dossier audio" });
+  }
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'CareTrack Kiosk API', port: PORT });

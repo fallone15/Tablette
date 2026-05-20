@@ -7,6 +7,7 @@ const VoiceAssistant = {
   recognition: null,
   synthesis: window.speechSynthesis,
   currentUtterance: null,
+  currentAudio: null, // Track currently playing custom audio recording
 
   // Configuration des langues pour la synthèse vocale
   langCodes: {
@@ -47,7 +48,7 @@ const VoiceAssistant = {
           action: () => App.goTo('catalog')
         }
       },
-      'screen-patient-confirm': {
+      'patient-confirm': {
         oui: {
           keywords: ['oui', 'yes', 'نعم', 'إيه', 'أنا'],
           action: () => ConfirmScreen.yes()
@@ -146,6 +147,23 @@ const VoiceAssistant = {
     console.log(`🎙️ Assistant vocal : ${this.active ? 'ACTIF' : 'INACTIF'}`);
   },
 
+  deactivate() {
+    this.active = false;
+    const btn = document.getElementById('voice-toggle-btn');
+    const tooltip = document.getElementById('voice-tooltip');
+    if (btn) {
+      btn.classList.remove('active');
+      btn.classList.remove('speaking');
+      btn.classList.remove('listening');
+    }
+    if (tooltip) {
+      tooltip.style.display = 'block';
+    }
+    this.stopSpeaking();
+    this.stopListening();
+    console.log("🎙️ Assistant vocal : DÉSACTIVÉ (Retour accueil)");
+  },
+
   // Initialisation de la reconnaissance vocale
   initSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -239,59 +257,111 @@ const VoiceAssistant = {
   },
 
   stopSpeaking() {
+    if (this.currentAudio) {
+      try {
+        this.currentAudio.pause();
+      } catch (e) {}
+      this.currentAudio = null;
+    }
     if (this.synthesis && this.synthesis.speaking) {
       this.synthesis.cancel();
-      this.speaking = false;
-      document.getElementById('voice-toggle-btn').classList.remove('speaking');
     }
+    this.speaking = false;
+    const btn = document.getElementById('voice-toggle-btn');
+    if (btn) btn.classList.remove('speaking');
   },
 
-  // Analyse et lecture intelligente de l'écran en cours
+  // Lit un fichier audio personnalisé s'il existe, sinon se replie sur le TTS
+  playAudioOrFallback(key, fallbackText) {
+    const lang = App.state.lang;
+    const audioUrl = `audio/${lang}/${key}.mp3?t=${Date.now()}`;
+    
+    this.stopSpeaking();
+    this.stopListening();
+    
+    const audio = new Audio(audioUrl);
+    this.currentAudio = audio;
+    
+    audio.oncanplaythrough = () => {
+      if (this.currentAudio !== audio) return;
+      
+      this.speaking = true;
+      const btn = document.getElementById('voice-toggle-btn');
+      if (btn) btn.classList.add('speaking');
+      
+      audio.play().catch(e => {
+        console.warn("⚠️ Impossible de lancer la lecture audio :", e);
+        this.speak(fallbackText);
+      });
+    };
+    
+    audio.onended = () => {
+      if (this.currentAudio === audio) {
+        this.currentAudio = null;
+      }
+      this.speaking = false;
+      const btn = document.getElementById('voice-toggle-btn');
+      if (btn) btn.classList.remove('speaking');
+      
+      if (this.active) {
+        this.startListening();
+      }
+    };
+    
+    audio.onerror = () => {
+      if (this.currentAudio !== audio) return;
+      this.currentAudio = null;
+      console.log(`🔊 Audio personnalisé absent (${audioUrl}). Utilisation de la synthèse vocale.`);
+      this.speak(fallbackText);
+    };
+  },
+
+  // Analyse et lecture intelligente de l'écran en cours (système hybride)
   speakCurrentScreen() {
     const screen = App.currentScreen;
-    let text = "";
 
-    // 1. Détermination du texte à prononcer selon l'écran actif
     switch (screen) {
       case 'welcome':
-        text = App.t('voice_intro_welcome');
+        this.playAudioOrFallback('voice_intro_welcome', App.t('voice_intro_welcome'));
         break;
       case 'rfid-scan':
-        text = App.t('rfid_title') + ". " + App.t('rfid_subtitle');
+        this.playAudioOrFallback('voice_guide_rfid', App.t('voice_guide_rfid'));
         break;
       case 'pin-entry':
-        text = App.t('pin_title') + ". " + (App.state.lang === 'ary' ? "عافاك دخل أربعة د الأرقام ديالك فالكلافي." : App.state.lang === 'ar' ? "يرجى كتابة أرقامك الأربعة على لوحة المفاتيح." : App.state.lang === 'en' ? "Please compose your four digits on the numeric keypad." : "Veuillez composer vos quatre chiffres sur le clavier numérique.");
+        this.playAudioOrFallback('voice_guide_pin', App.t('voice_guide_pin'));
         break;
-      case 'screen-patient-confirm':
+      case 'patient-confirm': {
         const patientName = document.getElementById('patient-name')?.textContent || "";
-        text = App.t('confirm_title') + " " + patientName + " ? " + (App.state.lang === 'ary' ? "قول : إيه، ولا قول : لا." : App.state.lang === 'ar' ? "قل : نعم، أو قل : لا." : App.state.lang === 'en' ? "Say: Yes, or say: No." : "Dites : Oui, ou dites : Non.");
+        const fallbackText = (patientName ? patientName + ". " : "") + App.t('voice_guide_confirm');
+        this.playAudioOrFallback('voice_guide_confirm', fallbackText);
         break;
+      }
       case 'appointments':
-        text = App.t('appts_title') + ". " + App.t('appts_subtitle');
+        this.playAudioOrFallback('voice_guide_appts', App.t('voice_guide_appts'));
         break;
-      case 'payment':
+      case 'payment': {
         const amount = document.getElementById('payment-amount')?.textContent || "";
-        text = App.t('payment_title') + ". " + (App.state.lang === 'ary' ? "الثمن هو " + amount + ". قول : كارط، باش تخلص بالبطاقة البنكية. ولا قول : كاش، باش تخلص فالمكتب د الاستقبال." : App.state.lang === 'ar' ? "المبلغ هو " + amount + ". قل : بطاقة، للدفع بالبطاقة البنكية. أو قل : كاش، للدفع عند الاستقبال." : App.state.lang === 'en' ? "The amount is " + amount + ". Say: Card, to pay by bank card. Or say: Cash, to pay at the reception." : "Le montant est de " + amount + ". Dites : Carte, pour régler par carte bancaire. Ou dites : Espèces, pour payer à l'accueil.");
+        const fallbackText = (amount ? App.t('payment_amount') + " " + amount + ". " : "") + App.t('voice_guide_payment');
+        this.playAudioOrFallback('voice_guide_payment', fallbackText);
         break;
+      }
       case 'service-select':
-        text = App.t('service_title') + ". " + App.t('service_subtitle');
+        this.playAudioOrFallback('voice_guide_service', App.t('voice_guide_service'));
         break;
       case 'guest-flow':
-        text = App.t('guest_title') + ". " + App.t('guest_subtitle1') + ". " + (App.state.lang === 'ary' ? "عافاك عزل التخصص ديالك من الليستة." : App.state.lang === 'ar' ? "يرجى اختيار تخصص من القائمة." : App.state.lang === 'en' ? "Please select a specialty from the list." : "Veuillez sélectionner une spécialité dans la liste.");
+        this.playAudioOrFallback('voice_guide_guest', App.t('voice_guide_guest'));
         break;
-      case 'ticket':
+      case 'ticket': {
         const num = document.getElementById('ticket-number')?.textContent || "";
-        text = App.t('ticket_success') + ". " + (App.state.lang === 'ary' ? "الرقم ديالك هو " + num + ". " : App.state.lang === 'ar' ? "رقمك هو " + num + ". " : App.state.lang === 'en' ? "Your number is " + num + ". " : "Votre numéro d'attente est le " + num + ". ") + App.t('ticket_msg_1') + " " + App.t('ticket_msg_2');
+        const fallbackText = (num ? App.t('ticket_number_label') + " " + num + ". " : "") + App.t('voice_guide_ticket');
+        this.playAudioOrFallback('voice_guide_ticket', fallbackText);
         break;
+      }
       case 'catalog':
-        text = App.t('catalog_title') + ". " + App.t('catalog_subtitle');
+        this.playAudioOrFallback('voice_guide_catalog', App.t('voice_guide_catalog'));
         break;
       default:
-        text = "";
-    }
-
-    if (text) {
-      this.speak(text);
+        this.stopSpeaking();
     }
   },
 

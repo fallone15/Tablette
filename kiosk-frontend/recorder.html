@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareTrack - Enregistreur de Voix Premium</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --glass-bg: rgba(30, 41, 59, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.35);
+      --success: #10b981;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeIn 0.8s ease;
+    }
+
+    header h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(to right, #60a5fa, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 30px;
+      animation: slideUp 0.8s ease;
+    }
+
+    @media (max-width: 968px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(16px);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Configuration Panel */
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    select {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--glass-border);
+      padding: 14px;
+      border-radius: 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    /* Keys List */
+    .keys-list {
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    .keys-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .keys-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .key-item {
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .key-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--glass-border);
+    }
+
+    .key-item.active {
+      background: rgba(59, 130, 246, 0.08);
+      border-color: var(--primary);
+    }
+
+    .key-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #60a5fa;
+      margin-bottom: 6px;
+    }
+
+    .key-preview {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Recorder Panel */
+    .recorder-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 580px;
+    }
+
+    .prompt-box {
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 16px;
+      padding: 24px;
+      border-left: 4px solid var(--primary);
+      margin-bottom: 30px;
+    }
+
+    .prompt-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .prompt-text {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    /* Visualizer */
+    .visualizer-container {
+      width: 100%;
+      height: 120px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .time-indicator {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-family: monospace;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: bold;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .record-btn-wrap {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .record-btn {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: var(--danger);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 2;
+    }
+
+    .record-btn:active {
+      transform: scale(0.95);
+    }
+
+    .record-btn.recording {
+      background: #dc2626;
+      animation: pulse 1.5s infinite;
+      box-shadow: 0 0 40px rgba(239, 68, 68, 0.7);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 15px;
+      width: 100%;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 20px;
+      border-radius: 12px;
+      border: none;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid var(--glass-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .audio-player-wrap {
+      width: 100%;
+      margin-top: 15px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 12px;
+      padding: 10px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--glass-border);
+    }
+
+    audio {
+      flex: 1;
+      height: 40px;
+      border-radius: 8px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 20px;
+      margin-top: 15px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .status-badge.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .status-success {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>CareTrack Studio</h1>
+    <p>Enregistrez vos propres guides vocaux pour personnaliser la borne</p>
+  </header>
+
+  <div class="container">
+    
+    <!-- Left panel: Keys and Configuration -->
+    <div class="card">
+      <div class="form-group">
+        <label for="lang-select">1. Langue d'enregistrement</label>
+        <select id="lang-select">
+          <option value="fr">Français (fr)</option>
+          <option value="ary">Darija Marocain (ary)</option>
+          <option value="ar">Arabe Standard (ar)</option>
+          <option value="en">Anglais (en)</option>
+        </select>
+      </div>
+
+      <label>2. Sélectionnez le guide à enregistrer</label>
+      <div class="keys-list" id="keys-list">
+        <!-- Dyn. populated -->
+      </div>
+    </div>
+
+    <!-- Right panel: Recorder Console -->
+    <div class="card recorder-panel">
+      <div>
+        <h2>🎙️ Console d'Enregistrement</h2>
+        
+        <div class="prompt-box">
+          <div class="prompt-title" id="prompt-key-label">Sélectionnez une clé</div>
+          <div class="prompt-text" id="prompt-text-display">
+            Veuillez choisir un guide vocal dans la liste de gauche pour afficher son texte et commencer l'enregistrement.
+          </div>
+        </div>
+      </div>
+
+      <!-- Live sound visualizer -->
+      <div class="visualizer-container">
+        <canvas id="visualizer"></canvas>
+        <div class="time-indicator" id="timer">00:00</div>
+      </div>
+
+      <!-- Controls and actions -->
+      <div class="controls">
+        <div class="record-btn-wrap">
+          <button class="record-btn" id="record-btn" disabled title="Enregistrer">🎙️</button>
+        </div>
+
+        <div class="audio-player-wrap" id="player-wrap">
+          <span style="font-size: 1.2rem;">🎧</span>
+          <audio id="audio-playback" controls></audio>
+        </div>
+
+        <div class="status-badge" id="status-badge">
+          <span id="status-icon">✓</span> <span id="status-text">Audio enregistré</span>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="tts-preview-btn" disabled>
+            🔊 Écouter la synthèse
+          </button>
+          <button class="btn btn-primary" id="save-btn" disabled>
+            💾 Sauvegarder la voix sur la Borne
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Loading local translations dictionary -->
+  <script src="js/translations.js"></script>
+  <script>
+    // Liste des clés de guide vocal à configurer
+    const voiceKeys = [
+      'voice_intro_welcome',
+      'voice_guide_rfid',
+      'voice_guide_pin',
+      'voice_guide_confirm',
+      'voice_guide_appts',
+      'voice_guide_payment',
+      'voice_guide_service',
+      'voice_guide_guest',
+      'voice_guide_ticket',
+      'voice_guide_catalog'
+    ];
+
+    let currentLang = 'fr';
+    let selectedKey = null;
+    
+    // Audio elements & states
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let audioBlob = null;
+    let recordingTimer = null;
+    let recordStartTime = 0;
+    
+    // Web Audio visualizer
+    let audioCtx = null;
+    let analyser = null;
+    let drawVisual = null;
+
+    // DOM Elements
+    const langSelect = document.getElementById('lang-select');
+    const keysListContainer = document.getElementById('keys-list');
+    const promptKeyLabel = document.getElementById('prompt-key-label');
+    const promptTextDisplay = document.getElementById('prompt-text-display');
+    
+    const recordBtn = document.getElementById('record-btn');
+    const audioPlayback = document.getElementById('audio-playback');
+    const playerWrap = document.getElementById('player-wrap');
+    const saveBtn = document.getElementById('save-btn');
+    const ttsPreviewBtn = document.getElementById('tts-preview-btn');
+    const timerDisplay = document.getElementById('timer');
+    const statusBadge = document.getElementById('status-badge');
+    const statusText = document.getElementById('status-text');
+    const statusIcon = document.getElementById('status-icon');
+    
+    const canvas = document.getElementById('visualizer');
+    const canvasCtx = canvas.getContext('2d');
+
+    // Resize canvas
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Render clear canvas background
+    function drawIdleCanvas() {
+      if (!canvasCtx) return;
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      canvasCtx.fillStyle = 'rgba(30, 41, 59, 0.1)';
+      canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      canvasCtx.lineWidth = 2;
+      canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(0, canvas.height / 2);
+      canvasCtx.lineTo(canvas.width, canvas.height / 2);
+      canvasCtx.stroke();
+    }
+    drawIdleCanvas();
+
+    // Populate Key Items
+    function populateKeysList() {
+      keysListContainer.innerHTML = '';
+      voiceKeys.forEach(key => {
+        const textPreview = translations[currentLang]?.[key] || 'Non traduit';
+        
+        const item = document.createElement('div');
+        item.className = `key-item ${selectedKey === key ? 'active' : ''}`;
+        item.innerHTML = `
+          <div class="key-name">${key.replace('voice_guide_', '').replace('voice_intro_', '').toUpperCase()}</div>
+          <div class="key-preview">${textPreview}</div>
+        `;
+        
+        item.addEventListener('click', () => selectKey(key));
+        keysListContainer.appendChild(item);
+      });
+    }
+
+    // Select active Key
+    function selectKey(key) {
+      selectedKey = key;
+      
+      // Update active styling
+      document.querySelectorAll('.key-item').forEach(el => el.classList.remove('active'));
+      const activeIdx = voiceKeys.indexOf(key);
+      if (activeIdx !== -1) {
+        document.querySelectorAll('.key-item')[activeIdx].classList.add('active');
+      }
+
+      // Display key content
+      const text = translations[currentLang]?.[key] || '';
+      promptKeyLabel.textContent = `Texte cible (${key})`;
+      promptTextDisplay.textContent = text;
+
+      // Reset controls
+      recordBtn.removeAttribute('disabled');
+      ttsPreviewBtn.removeAttribute('disabled');
+      resetRecorderState();
+      hideStatus();
+      
+      // Check if custom audio is already recorded
+      checkCustomAudioExists(key);
+    }
+
+    // Check if custom audio already recorded and display status
+    function checkCustomAudioExists(key) {
+      const audioUrl = `audio/${currentLang}/${key}.mp3?t=${Date.now()}`;
+      const testAudio = new Audio(audioUrl);
+      
+      testAudio.oncanplaythrough = () => {
+        showStatus(`Audio personnalisé actif sur la borne !`, 'success');
+        audioPlayback.src = audioUrl;
+        playerWrap.style.display = 'flex';
+      };
+      
+      testAudio.onerror = () => {
+        // No custom audio exists yet
+        playerWrap.style.display = 'none';
+        showStatus(`Aucun enregistrement personnalisé (Synthèse TTS par défaut)`, 'warning');
+      };
+    }
+
+    // Reset recorder states
+    function resetRecorderState() {
+      audioChunks = [];
+      audioBlob = null;
+      saveBtn.setAttribute('disabled', 'true');
+      timerDisplay.textContent = '00:00';
+    }
+
+    // Language Change Trigger
+    langSelect.addEventListener('change', (e) => {
+      currentLang = e.target.value;
+      populateKeysList();
+      if (selectedKey) {
+        selectKey(selectedKey);
+      }
+    });
+
+    // Start Recording
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        
+        // Setup Media Recorder
+        mediaRecorder = new MediaRecorder(stream);
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          audioPlayback.src = audioUrl;
+          playerWrap.style.display = 'flex';
+          saveBtn.removeAttribute('disabled');
+          
+          showStatus("Enregistrement local complété ! Écoutez-le puis sauvegardez.", 'success');
+          
+          // Stop media stream tracks
+          stream.getTracks().forEach(track => track.stop());
+          
+          // Stop visualizer
+          if (drawVisual) {
+            cancelAnimationFrame(drawVisual);
+          }
+          drawIdleCanvas();
+        };
+
+        // Start Web Audio for visualizer
+        setupAudioVisualizer(stream);
+
+        // Start
+        mediaRecorder.start(10); // Capture chunks every 10ms
+        recordStartTime = Date.now();
+        recordBtn.classList.add('recording');
+        recordBtn.textContent = '⏹️';
+        
+        // Start Timer
+        recordingTimer = setInterval(() => {
+          const elapsed = Date.now() - recordStartTime;
+          const secs = Math.floor(elapsed / 1000) % 60;
+          const mins = Math.floor(elapsed / 60000);
+          timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }, 200);
+
+      } catch (err) {
+        console.error("❌ Erreur accès microphone:", err);
+        alert("Impossible d'accéder au microphone. Veuillez autoriser l'accès.");
+      }
+    }
+
+    // Stop Recording
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      clearInterval(recordingTimer);
+      recordBtn.classList.remove('recording');
+      recordBtn.textContent = '🎙️';
+    }
+
+    // Toggle Record Button Action
+    recordBtn.addEventListener('click', () => {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    });
+
+    // Upload recorded audio to the Backend
+    saveBtn.addEventListener('click', async () => {
+      if (!audioBlob || !selectedKey) return;
+      
+      saveBtn.setAttribute('disabled', 'true');
+      saveBtn.textContent = '💾 Envoi en cours...';
+      
+      try {
+        const response = await fetch(`/api/audio/upload?lang=${currentLang}&key=${selectedKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'audio/mpeg'
+          },
+          body: audioBlob
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          showStatus("✓ Voix enregistrée sur la borne avec succès !!", 'success');
+        } else {
+          showStatus("❌ Erreur serveur lors de la sauvegarde.", 'warning');
+        }
+      } catch (err) {
+        console.error("❌ Erreur d'upload:", err);
+        showStatus("❌ Impossible de joindre le serveur.", 'warning');
+      } finally {
+        saveBtn.textContent = '💾 Sauvegarder la voix sur la Borne';
+        saveBtn.removeAttribute('disabled');
+      }
+    });
+
+    // Speak targeted key translation via dynamic TTS (speechSynthesis)
+    ttsPreviewBtn.addEventListener('click', () => {
+      if (!selectedKey) return;
+      
+      window.speechSynthesis.cancel();
+      const text = translations[currentLang]?.[selectedKey] || '';
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      const langCodes = { fr: 'fr-FR', en: 'en-US', ar: 'ar-MA', ary: 'ar-MA' };
+      utterance.lang = langCodes[currentLang] || 'fr-FR';
+      
+      // Select voice
+      const voices = window.speechSynthesis.getVoices();
+      const voice = voices.find(v => v.lang.toLowerCase() === utterance.lang.toLowerCase());
+      if (voice) utterance.voice = voice;
+      
+      window.speechSynthesis.speak(utterance);
+    });
+
+    // Setup visualizer canvas animation
+    function setupAudioVisualizer(stream) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaStreamSource(stream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      
+      source.connect(analyser);
+      
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      function draw() {
+        drawVisual = requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArray);
+        
+        canvasCtx.fillStyle = 'rgba(15, 23, 42, 0.4)';
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        const barWidth = (canvas.width / bufferLength) * 1.5;
+        let barHeight;
+        let x = 0;
+        
+        for (let i = 0; i < bufferLength; i++) {
+          barHeight = dataArray[i] / 2;
+          
+          // Gradient fill
+          const grad = canvasCtx.createLinearGradient(0, canvas.height, 0, 0);
+          grad.addColorStop(0, '#3b82f6');
+          grad.addColorStop(1, '#10b981');
+          
+          canvasCtx.fillStyle = grad;
+          canvasCtx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
+          
+          x += barWidth;
+        }
+      }
+      
+      draw();
+    }
+
+    // Status Helper
+    function showStatus(text, type) {
+      statusText.textContent = text;
+      statusBadge.className = 'status-badge show';
+      if (type === 'success') {
+        statusBadge.classList.add('status-success');
+        statusIcon.textContent = '✓';
+      } else if (type === 'warning') {
+        statusBadge.classList.add('status-warning');
+        statusIcon.textContent = '⚠️';
+      }
+    }
+
+    function hideStatus() {
+      statusBadge.className = 'status-badge';
+    }
+
+    // Init
+    populateKeysList();
+  </script>
+</body>
+</html>

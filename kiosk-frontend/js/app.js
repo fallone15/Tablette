@@ -231,6 +231,9 @@ const App = {
       this.setLanguage('fr'); // Retour au français à chaque nouvelle session
       this._history = [];
       InactivityManager.pause(); // Pas de timer sur l'accueil
+      if (typeof VoiceAssistant !== 'undefined' && typeof VoiceAssistant.deactivate === 'function') {
+        VoiceAssistant.deactivate();
+      }
     } else {
       InactivityManager.reset(); // (Re)démarrer le timer sur tous les autres écrans
     }
