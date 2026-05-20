@@ -22,6 +22,8 @@ const translations = {
     'btn_no_card_desc': "Prise en charge rapide sans dossier requis",
     'help_text': "Besoin d'aide ? Adressez-vous à l'accueil.",
     'btn_catalog': "Catalogue et Horaires",
+    'voice_assistant_help': "Besoin d'aide vocale ? Cliquez ici !",
+    'voice_intro_welcome': "Bienvenue sur CareTrack. Cette borne d'accueil intelligente vous permet de prendre un rendez-vous ou de confirmer un passage, de vérifier les médecins spécialisés actuellement disponibles et de consulter leurs horaires. Vous pouvez vous identifier avec votre carte patient, ou vous enregistrer en tant que nouveau patient sans carte pour une prise en charge immédiate.",
 
     // RFID Screen
     'rfid_title': "Insérez votre carte dans le lecteur",
@@ -165,6 +167,8 @@ const translations = {
     'btn_no_card_desc': "Quick check-in without existing records",
     'help_text': "Need help? Please ask at reception.",
     'btn_catalog': "Catalog & Schedules",
+    'voice_assistant_help': "Need voice assistance? Click here!",
+    'voice_intro_welcome': "Welcome to CareTrack. This intelligent kiosk allows you to confirm your appointment, check currently available specialized doctors, and view their schedules. You can check in using your patient card, or register as a new patient without a card for immediate care.",
 
     // RFID Screen
     'rfid_title': "Insert your card into the reader",
@@ -303,6 +307,8 @@ const translations = {
     'btn_no_card_desc': "تسجيل سريع بدون ملف سابق",
     'help_text': "هل تحتاج مساعدة؟ يرجى التوجه للاستقبال.",
     'btn_catalog': "الدليل والمواعيد",
+    'voice_assistant_help': "هل تحتاج إلى مساعدة صوتية؟ اضغط هنا!",
+    'voice_intro_welcome': "مرحباً بكم في CareTrack. تمكنكم هذه الشاشة الذكية من حجز موعد أو تأكيد حضوركم، والتحقق من الأطباء المتخصصين المتاحين حالياً والاطلاع على أوقات عملهم. يمكنكم التعريف بأنفسكم باستخدام بطاقة المريض، أو التسجيل كمريض جديد بدون بطاقة للحصول على رعاية فورية.",
 
     // RFID Screen
     'rfid_title': "قرب بطاقتك من القارئ",

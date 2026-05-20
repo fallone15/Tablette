@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/kiosk.css" />
+  <link rel="stylesheet" href="css/voice-assistant.css" />
 </head>
 <body>
   <!-- Fond animé -->
@@ -488,12 +489,16 @@
   <script src="js/screens/payment.js"></script>
   <script src="js/screens/ticket.js"></script>
   <script src="js/screens/catalog.js"></script>
+  <script src="js/voice-assistant.js"></script>
   <script>
     // Configuration Stripe
     const stripe = Stripe('pk_test_51TJcrfFLNDdgKlq0Jx7X9JC3yJdYBB1fDzf0yUb048vGMGSZzJqXCVriVRWobvTd8WCzy0sKyxUkstl18ahZ8RQ200tnKDWmNz');
     
     // Démarrage de l'application
-    document.addEventListener('DOMContentLoaded', () => App.init());
+    document.addEventListener('DOMContentLoaded', () => {
+      App.init();
+      VoiceAssistant.init();
+    });
   </script>
 </body>
 </html>

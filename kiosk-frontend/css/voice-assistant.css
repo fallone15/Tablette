@@ -1,0 +1,158 @@
+/* ─── voice-assistant.css — Design Premium de l'Assistant ─── */
+
+:root {
+  --voice-primary: #00b4d8;
+  --voice-primary-glow: rgba(0, 180, 216, 0.4);
+  --voice-listening: #2ec4b6;
+  --voice-listening-glow: rgba(46, 196, 182, 0.4);
+  --voice-speaking: #e76f51;
+  --voice-speaking-glow: rgba(231, 111, 81, 0.4);
+}
+
+/* Positionnement flottant */
+.voice-widget {
+  position: fixed;
+  bottom: 40px;
+  left: 40px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Bouton principal (Globe / Orb) */
+.voice-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(16, 16, 17, 0.75);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 
+              0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.voice-btn:hover {
+  transform: scale(1.08) translateY(-3px);
+  border-color: var(--voice-primary);
+  box-shadow: 0 15px 35px rgba(0, 180, 216, 0.3);
+}
+
+/* Icône du micro */
+.voice-mic-icon {
+  font-size: 28px;
+  transition: all 0.3s ease;
+}
+
+/* Effets d'États (Actif, Parle, Écoute) */
+
+/* 🔵 1. Assistant Activé */
+.voice-btn.active {
+  background: rgba(0, 180, 216, 0.15);
+  border-color: var(--voice-primary);
+  animation: pulse-active 2s infinite ease-in-out;
+}
+.voice-btn.active .voice-mic-icon {
+  transform: scale(1.1);
+}
+
+/* 🟢 2. En cours d'Écoute (Speech-To-Text actif) */
+.voice-btn.listening {
+  background: rgba(46, 196, 182, 0.2);
+  border-color: var(--voice-listening);
+  animation: pulse-listening 1.2s infinite ease-in-out;
+}
+.voice-btn.listening .voice-mic-icon {
+  color: var(--voice-listening);
+  animation: bounce 0.6s infinite alternate;
+}
+
+/* 🔴 3. En train de Parler (Text-To-Speech actif) */
+.voice-btn.speaking {
+  background: rgba(231, 111, 81, 0.2);
+  border-color: var(--voice-speaking);
+}
+.voice-btn.speaking .voice-mic-icon {
+  display: none; /* Cache le micro pour montrer l'onde sonore */
+}
+
+/* Onde sonore animée lorsque l'assistant parle */
+.sound-wave {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 24px;
+}
+
+.voice-btn.speaking .sound-wave {
+  display: flex;
+}
+
+.sound-wave span {
+  display: block;
+  width: 3px;
+  height: 10px;
+  background-color: var(--voice-speaking);
+  border-radius: 3px;
+  animation: wave 1.2s infinite ease-in-out;
+}
+
+.sound-wave span:nth-child(1) { animation-delay: 0.1s; }
+.sound-wave span:nth-child(2) { animation-delay: 0.3s; }
+.sound-wave span:nth-child(3) { animation-delay: 0.6s; }
+.sound-wave span:nth-child(4) { animation-delay: 0.4s; }
+.sound-wave span:nth-child(5) { animation-delay: 0.2s; }
+
+/* Bulle d'aide (Tooltip) */
+.voice-tooltip {
+  background: rgba(20, 20, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 16px;
+  border-radius: 30px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  animation: float 3s infinite ease-in-out;
+  max-width: 250px;
+  text-align: center;
+}
+
+/* ─── ANIMATIONS CSS ─── */
+
+@keyframes pulse-active {
+  0% { box-shadow: 0 0 0 0 var(--voice-primary-glow), 0 10px 30px rgba(0, 0, 0, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(0, 180, 216, 0), 0 10px 30px rgba(0, 0, 0, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 180, 216, 0), 0 10px 30px rgba(0, 0, 0, 0.4); }
+}
+
+@keyframes pulse-listening {
+  0% { box-shadow: 0 0 0 0 var(--voice-listening-glow); transform: scale(1); }
+  50% { box-shadow: 0 0 0 12px rgba(46, 196, 182, 0); transform: scale(1.05); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 196, 182, 0); transform: scale(1); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(2.5); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-3px); }
+}
