@@ -14,7 +14,7 @@ const TicketScreen = {
     document.getElementById('ticket-number').textContent = ticket.numero_file;
 
     // Date et heure du ticket
-    const localeMap = { fr: 'fr-FR', en: 'en-US', ar: 'ar-MA' };
+    const localeMap = { fr: 'fr-FR', en: 'en-US', ar: 'ar-MA', ary: 'ar-MA' };
     const locale = localeMap[App.state.lang] || 'fr-FR';
     const now = new Date();
     document.getElementById('ticket-datetime').innerHTML =

@@ -8,7 +8,7 @@ const ConfirmScreen = {
       `${patient.prenom} ${patient.nom}`;
 
     // Méta infos
-    const localeMap = { fr: 'fr-FR', en: 'en-US', ar: 'ar-MA' };
+    const localeMap = { fr: 'fr-FR', en: 'en-US', ar: 'ar-MA', ary: 'ar-MA' };
     const locale = localeMap[App.state.lang] || 'fr-FR';
 
     const sexeKey = patient.sexe === 'homme' ? 'male' : patient.sexe === 'femme' ? 'female' : 'other';

@@ -14,7 +14,7 @@ const translations = {
     'popup_error_title': "Oups !!",
 
     // Welcome Screen
-    'welcome_title': "Bienvenue à CareTrack 😊",
+    'welcome_title': "Bienvenue à CareTrack",
     'welcome_subtitle': "Sélectionnez votre situation pour commencer",
     'btn_has_card': "J'ai ma carte patient",
     'btn_has_card_desc': "Identification rapide par carte RFID et code PIN",
@@ -38,7 +38,7 @@ const translations = {
     'rfid_error_server': "Erreur de connexion au serveur. Veuillez réessayer.",
 
     // PIN Screen
-    'pin_hello': "Bonjour, {name} 👋",
+    'pin_hello': "Bonjour  {name} ",
     'pin_title': "Entrez votre code PIN",
     'pin_error_digits': "Entrez 4 chiffres",
     'pin_error_too_many': "Trop de tentatives. Veuillez vous adresser à l'accueil.",
@@ -159,7 +159,7 @@ const translations = {
     'popup_error_title': "Oops!!",
 
     // Welcome Screen
-    'welcome_title': "Welcome to CareTrack 😊",
+    'welcome_title': "Welcome to CareTrack ",
     'welcome_subtitle': "Select your situation to begin",
     'btn_has_card': "I have my patient card",
     'btn_has_card_desc': "Quick identification via RFID card and PIN",
@@ -183,7 +183,7 @@ const translations = {
     'rfid_error_server': "Server connection error. Please try again.",
 
     // PIN Screen
-    'pin_hello': "Hello, {name} 👋",
+    'pin_hello': "Hello {name} ",
     'pin_title': "Enter your PIN code",
     'pin_error_invalid': "Incorrect PIN code",
     'pin_error_locked': "Account locked (too many attempts)",
@@ -299,7 +299,7 @@ const translations = {
     'popup_error_title': "عذراً !!",
 
     // Welcome Screen
-    'welcome_title': "مرحباً بكم في CareTrack 😊",
+    'welcome_title': "مرحباً بكم في CareTrack ",
     'welcome_subtitle': "اختر حالتك للبدء",
     'btn_has_card': "لدي بطاقة مريض",
     'btn_has_card_desc': "تعريف سريع عبر بطاقة RFID ورمز PIN",
@@ -322,7 +322,7 @@ const translations = {
     'rfid_error_server': "خطأ في الاتصال بالخادم. يرجى المحاولة مرة أخرى.",
 
     // PIN Screen
-    'pin_hello': "مرحباً، {name} 👋",
+    'pin_hello': "مرحباً {name} ",
     'pin_title': "أدخل رمز PIN الخاص بك",
     'pin_error_digits': "أدخل 4 أرقام",
     'pin_error_too_many': "كثير من المحاولات. يرجى التوجه إلى الاستقبال.",
@@ -425,6 +425,150 @@ const translations = {
     'day_1': "الاثنين",
     'day_2': "الثلاثاء",
     'day_3': "الأربعاء",
+    'day_4': "الخميس",
+    'day_5': "الجمعة",
+    'day_6': "السبت",
+  },
+
+  ary: {
+    // Topbar & Global
+    'logo_sub': "السبيطار الذكي",
+    'loading': "جاري التسجيل...",
+    'cancel': "✕ إلغاء",
+    'back': "الرجوع →",
+    'error_loading': "وقع مشكل فالتنزيل. عاود عافاك.",
+    'mad': "درهم",
+    'min': "دقيقة",
+    'ok': "موافق",
+    'popup_error_title': "سمح لينا !!",
+
+    // Welcome Screen
+    'welcome_title': "مرحبا بيكم في CareTrack ",
+    'welcome_subtitle': "عزل كيفاش بغيتي تبدا",
+    'btn_has_card': "عندي لاكارط ديالي",
+    'btn_has_card_desc': "تعريف سريع بالدوزان ديال لاكارط و الكود PIN",
+    'btn_no_card': "أنا مريض جديد / ماعنديش كارط",
+    'btn_no_card_desc': "تقييد سريع بلا ما يكون عندك ملف من قبل",
+    'help_text': "محتاج مساعدة؟ سول في الاستقبال.",
+    'btn_catalog': "الدليل والوقت د المواعيد",
+    'voice_assistant_help': "محتاج مساعدة صوتية؟ ورك هنا!",
+    'voice_intro_welcome': "مرحبا بيكم في CareTrack. هاد الشاشة الذكية كتمكنكم باش تقيدو للحصول على موعد أو تأكدو الحضور ديالكم، وتشوفو الأطباء المتخصصين اللي موجودين دابا والوقات ديال عملهم. تقدرو تعرفو براسكم بالبطاقة ديال المريض، أو تقيدو كمريض جديد بلا بطاقة باش دوزو دغيا.",
+
+    // RFID Screen
+    'rfid_title': "قرب لاكارط ديالك من البلاصة ديال القراية",
+    'rfid_subtitle': "حط لاكارط فوق البلاصة المحددة الفوق",
+    'rfid_manual': "— أو دخل الرقم بيديك (تجربة) —",
+    'rfid_placeholder': "رقم لاكارط (مثال: PAT9660)",
+    'rfid_validate': "تأكيد",
+    'rfid_timeout': "الرجوع التلقائي مورا {n} ثانية",
+    'rfid_error_no_card': "دخل ولا مسح رقم لاكارط عافاك.",
+    'rfid_error_invalid': "ما عرفناش هاد لاكارط. تأكد من الرقم ديالها ولا تسجل كمريض جديد.",
+    'rfid_error_server': "وقع مشكل فالاتصال بالسيرفر. عاود عافاك.",
+
+    // PIN Screen
+    'pin_hello': "مرحبا {name} ",
+    'pin_title': "دخل كود PIN ديالك",
+    'pin_error_digits': "دخل 4 ديال الأرقام",
+    'pin_error_too_many': "درتي بزاف د المحاولات غالطين. سول عافاك في الاستقبال.",
+    'pin_error_incorrect': "كود PIN ماشي صحيح",
+    'pin_error_attempts': "بقات ليك {n} محاولة(محاولات)",
+    'pin_error_final': "بزاف د المحاولات غالطين. غادي نرجعو للرئيسية مورا 5 ثواني.",
+    'pin_error_invalid': "كود PIN ماشي صحيح",
+    'pin_error_locked': "الكونت ديالك تسد (بزاف د المحاولات غالطين)",
+    'pin_attempts': "بقات ليك {n} محاولة(محاولات)",
+
+    // Confirm Screen
+    'confirm_title': "واش هادا نتا بالصح؟",
+    'confirm_yes': "✓ إيه، أنا هادا",
+    'confirm_no': "✗ لا، ماشي أنا",
+    'male': "راجل",
+    'female': "مرا",
+    'other': "آخر",
+    'years_old': "{n} عام",
+    'born_on': "تزاد فـ {date}",
+    'allergies_label': "الحساسية",
+    'no_allergies': "ماعندوش شي حساسية معروفة",
+
+    // Appointments Screen
+    'appts_title': "عندك موعد اليوم",
+    'appts_subtitle': "أكد الحضور ديالك لواحد من هاد المواعيد:",
+    'appts_skip': "ناخد تيكيت لسبب آخر",
+    'appts_loading': "كنتأكدو من المواعيد ديالك...",
+    'status_paid': "✅ خلاص مقيد فالسيت",
+    'status_unpaid': "💵 الخلاص تماك فالبلاصة",
+    'ticket_generating': "جاري استخراج التيكيت ديالك...",
+    'error_ticket': "وقع مشكل فاستخراج التيكيت.",
+    'appt_registered': "الموعد تقيد",
+
+    // Payment Screen
+    'payment_title': "كيفاش بغيتي تخلص؟",
+    'payment_amount': "ثمن الفحص:",
+    'payment_card': "بطاقة بنكية",
+    'payment_card_desc': "(فهاد الماكينة)",
+    'payment_cash': "تخلص فالمكتب د الاستقبال",
+    'payment_cash_desc': "(كاش، شيك، بطاقة، ولا تأمين)",
+    'payment_init': "جاري تحضير عملية الخلاص...",
+    'payment_processing': "جاري الخلاص دابا...",
+    'payment_card_details': "تفاصيل البطاقة البنكية",
+    'payment_pay': "خلص",
+    'payment_cashier_loading': "جاري إصدار تيكيت الصندوق...",
+    'error_ticket_cashier': "ما قدرناش نخرجو تيكيت الصندوق.",
+
+    // Service Select Screen
+    'service_title': "شمن خدمة محتاج؟",
+    'service_subtitle': "عزل نوع الفحص اللي بغيتي",
+    'service_loading': "جاري تحميل الخدمات...",
+    'service_wait': "⏱ ~{n} دقيقة لكل واحد",
+    'service_queue': "{n} كيتسناو",
+    'service_total_wait': "≈ {n} دقيقة ديال الانتظار",
+    'service_no_wait': "ماكاينش الانتظار",
+    'no_doctor': "ماكاين حتى طبيب فهاد الخدمة اليوم",
+    'loading_doctors': "كنتأكدو من الأطباء اللي كاينين...",
+
+    // Guest Flow
+    'guest_title': "تسجيل سريع",
+    'guest_subtitle1': "غادي نوجهوك لعند الطبيب اللي مسالي دابا.",
+    'guest_subtitle2': "ما غاديش يتصاوب ليك ملف طبي.",
+    'guest_proceed': "زيد للخلاص →",
+    'guest_error_specialty': "عزل التخصص ديالك عافاك",
+
+    // Ticket Screen
+    'ticket_success': "التيكيت ديال المرور ديالك",
+    'ticket_number_label': "الرقم ديالك",
+    'ticket_position': "نتا هو الرقم <span>{n}</span> فالانتظار",
+    'ticket_payment_alert': "⚠️ عافاك خلص ثمن الفحص فالصندوق (الاستقبال) قبل ما تمشي تسنى.",
+    'ticket_service': "الخدمة",
+    'ticket_doctor': "الطبيب",
+    'ticket_room': "قاعة الانتظار",
+    'ticket_est_time': "الوقت التقديري",
+    'ticket_price': "الثمن",
+    'ticket_msg_1': "تفضل ريح في قاعة الانتظار.",
+    'ticket_msg_2': "الفرملي غادي يعيط عليك بالرقم ديالك.",
+    'ticket_print': "🖨️ طبع التيكيت",
+    'ticket_new_session': "🏠 عملية جديدة",
+    'ticket_countdown': "غادي نرجعو للرئيسية مورا <span>{n}</span> ثانية",
+    'ticket_cashier_label': "رقم الصندوق",
+    'ticket_cashier_title': "تيكيت الصندوق",
+    'ticket_msg_cashier1': "عافاك تسنى حتى يعيطو على الرقم ديالك فالاستقبال.",
+    'ticket_msg_cashier2': "ملي تخلص، غادي يعطيوك التيكيت ديال الفحص ديالك.",
+    'ticket_prepaid': "✅ فحص مخلص من قبل",
+    'ticket_paid_card': "✅ مخلص بالبطاقة البنكية",
+    'ticket_rdv_on_time': "الوقت ديال الموعد محترم",
+    'floor': "الطبقة",
+    'tbd': "غادي يتحدد من بعد",
+    'soon': "دغيا دغيا",
+
+    // Catalog Screen
+    'catalog_title': "دليل الأطباء",
+    'catalog_subtitle': "شوف الأطباء المتخصصين ديالنا والأوقات اللي كيكونوا فيها.",
+    'catalog_loading': "جاري تحميل الدليل...",
+    'catalog_empty': "ماكاين حتى طبيب متوفر فالدليل.",
+    'hours': "الأوقات:",
+    'no_schedule': "ماعندناش شي أوقات مقيدة",
+    'day_0': "الحد",
+    'day_1': "التنين",
+    'day_2': "التلات",
+    'day_3': "الأربعا",
     'day_4': "الخميس",
     'day_5': "الجمعة",
     'day_6': "السبت",

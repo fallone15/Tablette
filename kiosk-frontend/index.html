@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <meta name="description" content="Borne d'accueil intelligente CareTrack — Enregistrez-vous rapidement pour votre consultation" />
+  <meta name="description"
+    content="Borne d'accueil intelligente CareTrack — Enregistrez-vous rapidement pour votre consultation" />
   <title>CareTrack — Borne d'Accueil</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@400;600;700;800&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="css/kiosk.css" />
   <link rel="stylesheet" href="css/voice-assistant.css" />
 </head>
+
 <body>
   <!-- Fond animé -->
   <div class="bg-orbs">
@@ -34,6 +39,7 @@
         <button class="lang-btn active" data-lang="fr" onclick="App.setLanguage('fr')">FR</button>
         <button class="lang-btn" data-lang="en" onclick="App.setLanguage('en')">EN</button>
         <button class="lang-btn" data-lang="ar" onclick="App.setLanguage('ar')">AR</button>
+        <button class="lang-btn" data-lang="ary" onclick="App.setLanguage('ary')">Darija</button>
       </div>
       <div class="topbar-divider"></div>
       <div class="topbar-time">
@@ -81,8 +87,11 @@
         <p class="welcome-help" data-i18n="help_text">Besoin d'aide ? Adressez-vous à l'accueil.</p>
 
         <!-- Floating action button detached -->
-        <button onclick="App.goTo('catalog')" style="position: fixed; bottom: 40px; right: 40px; background: rgba(0, 180, 216, 0.15); border: 1px solid rgba(0, 180, 216, 0.4); padding: 16px 28px; border-radius: 50px; font-size: 16px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); backdrop-filter: blur(10px); transition: all 0.2s; z-index: 100;" onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(0, 180, 216, 0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(0, 180, 216, 0.15)';">
-          <span style="font-size: 22px;">📅</span> 
+        <button onclick="App.goTo('catalog')"
+          style="position: fixed; bottom: 40px; right: 40px; background: rgba(0, 180, 216, 0.15); border: 1px solid rgba(0, 180, 216, 0.4); padding: 16px 28px; border-radius: 50px; font-size: 16px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); backdrop-filter: blur(10px); transition: all 0.2s; z-index: 100;"
+          onmouseover="this.style.transform='translateY(-4px)'; this.style.background='rgba(0, 180, 216, 0.25)';"
+          onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(0, 180, 216, 0.15)';">
+          <span style="font-size: 22px;">📅</span>
           <span data-i18n="btn_catalog">Catalogue et Horaires</span>
         </button>
       </div>
@@ -118,16 +127,8 @@
           <div class="rfid-manual">
             <p class="rfid-manual-label" data-i18n="rfid_manual">— ou saisir manuellement (test) —</p>
             <div class="rfid-input-row">
-              <input
-                id="rfid-input"
-                type="text"
-                class="rfid-input"
-                placeholder="N° carte (ex: PAT9660)"
-                data-i18n="rfid_placeholder"
-                autocomplete="off"
-                autocorrect="off"
-                spellcheck="false"
-              />
+              <input id="rfid-input" type="text" class="rfid-input" placeholder="N° carte (ex: PAT9660)"
+                data-i18n="rfid_placeholder" autocomplete="off" autocorrect="off" spellcheck="false" />
               <button class="rfid-submit-btn" onclick="RfidScreen.submit()" data-i18n="rfid_validate">Valider</button>
             </div>
           </div>
@@ -159,7 +160,7 @@
         </div>
 
         <div class="pin-zone">
-          <div class="pin-hello"><span data-i18n="pin_hello">Bonjour</span>, <span id="pin-prenom">Patient</span> 👋</div>
+          <div class="pin-hello" id="pin-greeting">Bonjour Patient </div>
           <h2 class="pin-title" data-i18n="pin_title">Entrez votre code PIN</h2>
           <div class="pin-dots" id="pin-dots">
             <div class="pin-dot" data-pos="0"></div>
@@ -253,17 +254,22 @@
         </div>
 
         <h2 class="service-title" data-i18n="appts_title">Vous avez un rendez-vous aujourd'hui</h2>
-        <p class="service-subtitle" data-i18n="appts_subtitle">Confirmez votre passage pour l'un des rendez-vous ci-dessous :</p>
+        <p class="service-subtitle" data-i18n="appts_subtitle">Confirmez votre passage pour l'un des rendez-vous
+          ci-dessous :</p>
 
-        <div id="appointments-list" class="appointments-list" style="width:100%;max-width:700px;display:flex;flex-direction:column;gap:16px;">
+        <div id="appointments-list" class="appointments-list"
+          style="width:100%;max-width:700px;display:flex;flex-direction:column;gap:16px;">
           <!-- Injecté dynamiquement -->
         </div>
 
-        <button class="btn-secondary btn-xl" onclick="AppointmentsScreen.skip()" style="margin-top:20px; background:var(--bg-card); border: 1px solid var(--border); color:var(--text-secondary);" data-i18n="appts_skip">
+        <button class="btn-secondary btn-xl" onclick="AppointmentsScreen.skip()"
+          style="margin-top:20px; background:var(--bg-card); border: 1px solid var(--border); color:var(--text-secondary);"
+          data-i18n="appts_skip">
           Prendre un ticket pour un autre motif
         </button>
 
-        <div id="appointments-error" class="error-msg hidden" style="margin-top:20px; width:100%; max-width:700px;"></div>
+        <div id="appointments-error" class="error-msg hidden" style="margin-top:20px; width:100%; max-width:700px;">
+        </div>
       </div>
     </div>
 
@@ -280,19 +286,29 @@
           <span class="step active">$</span>
         </div>
 
-        <div class="payment-zone" style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:700px;gap:20px;">
-          <h2 class="guest-title" style="margin-bottom:0;" data-i18n="payment_title">Comment souhaitez-vous régler ?</h2>
+        <div class="payment-zone"
+          style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:700px;gap:20px;">
+          <h2 class="guest-title" style="margin-bottom:0;" data-i18n="payment_title">Comment souhaitez-vous régler ?
+          </h2>
           <p class="guest-subtitle" style="margin-top:0;">
-            <span data-i18n="payment_amount">Montant de la consultation :</span> <strong id="payment-amount" style="color:var(--primary);font-size:24px;">— MAD</strong>
+            <span data-i18n="payment_amount">Montant de la consultation :</span> <strong id="payment-amount"
+              style="color:var(--primary);font-size:24px;">— MAD</strong>
           </p>
           <div style="display:flex;gap:20px;width:100%;margin-top:20px;">
-            <button class="btn-primary" style="flex:1;min-height:140px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;" onclick="PaymentScreen.payCB()">
+            <button class="btn-primary"
+              style="flex:1;min-height:140px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;"
+              onclick="PaymentScreen.payCB()">
               <span style="font-size:40px;">💳</span>
-              <span data-i18n="payment_card">Carte Bancaire</span><br><span style="font-size:13px;font-weight:400;" data-i18n="payment_card_desc">(Sur cette borne)</span>
+              <span data-i18n="payment_card">Carte Bancaire</span><br><span style="font-size:13px;font-weight:400;"
+                data-i18n="payment_card_desc">(Sur cette borne)</span>
             </button>
-            <button class="btn-secondary" style="flex:1;min-height:140px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;background:var(--bg-card);border:2px solid var(--warning);color:#fff;cursor:pointer;border-radius:var(--radius-md);" onclick="PaymentScreen.payCash()">
+            <button class="btn-secondary"
+              style="flex:1;min-height:140px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;background:var(--bg-card);border:2px solid var(--warning);color:#fff;cursor:pointer;border-radius:var(--radius-md);"
+              onclick="PaymentScreen.payCash()">
               <span style="font-size:40px;">💵</span>
-              <span data-i18n="payment_cash">Espèces</span><br><span style="font-size:13px;font-weight:400;color:var(--text-secondary);" data-i18n="payment_cash_desc">(Ticket pour la caissière)</span>
+              <span data-i18n="payment_cash">Espèces</span><br><span
+                style="font-size:13px;font-weight:400;color:var(--text-secondary);"
+                data-i18n="payment_cash_desc">(Ticket pour la caissière)</span>
             </button>
           </div>
         </div>
@@ -338,9 +354,10 @@
 
         <div class="guest-zone" style="max-width: 100%;">
           <div class="guest-icon">👤</div>
-          <h2 class="service-title" style="text-align: center; margin: 0;" data-i18n="guest_title">Prise en charge rapide</h2>
+          <h2 class="service-title" style="text-align: center; margin: 0;" data-i18n="guest_title">Prise en charge
+            rapide</h2>
           <p class="service-subtitle" style="text-align: center; margin-bottom: 20px;">
-            <span data-i18n="guest_subtitle1">Vous serez orienté vers un médecin disponible.</span><br/>
+            <span data-i18n="guest_subtitle1">Vous serez orienté vers un médecin disponible.</span><br />
             <span data-i18n="guest_subtitle2">Aucun dossier ne sera créé.</span>
           </p>
 
@@ -382,7 +399,9 @@
             <div class="ticket-position" id="ticket-position">Vous êtes le N°<span>1</span> en attente</div>
           </div>
 
-          <div id="ticket-payment-alert" class="hidden" style="background:rgba(231,76,60,0.1); border:2px dashed var(--danger); color:var(--danger); padding:15px; margin: 15px 20px; border-radius:var(--radius-md); text-align:center; font-weight:700; font-size:18px;" data-i18n="ticket_payment_alert">
+          <div id="ticket-payment-alert" class="hidden"
+            style="background:rgba(231,76,60,0.1); border:2px dashed var(--danger); color:var(--danger); padding:15px; margin: 15px 20px; border-radius:var(--radius-md); text-align:center; font-weight:700; font-size:18px;"
+            data-i18n="ticket_payment_alert">
             ⚠️ Veuillez régler la consultation à la caisse (Accueil) avant de patienter.
           </div>
 
@@ -434,7 +453,8 @@
 
         <div class="ticket-actions">
           <button class="btn-print" onclick="window.print()" data-i18n="ticket_print">🖨️ Imprimer le ticket</button>
-          <button class="btn-new-session" onclick="App.goTo('welcome')" data-i18n="ticket_new_session">🏠 Nouvelle session</button>
+          <button class="btn-new-session" onclick="App.goTo('welcome')" data-i18n="ticket_new_session">🏠 Nouvelle
+            session</button>
           <div class="ticket-countdown" data-i18n="ticket_countdown">
             Retour à l'accueil dans <span id="ticket-countdown">60</span>s
           </div>
@@ -449,9 +469,11 @@
       <div class="screen-inner" style="max-width: 900px;">
         <button class="back-btn" onclick="App.goTo('welcome')" data-i18n="back">← Retour</button>
         <h2 class="service-title" data-i18n="catalog_title">Catalogue des Médecins</h2>
-        <p class="service-subtitle" data-i18n="catalog_subtitle">Consultez nos médecins spécialisés et leurs horaires de disponibilité.</p>
+        <p class="service-subtitle" data-i18n="catalog_subtitle">Consultez nos médecins spécialisés et leurs horaires de
+          disponibilité.</p>
 
-        <div id="catalog-container" style="margin-top: 30px; width: 100%; display: flex; flex-direction: column; gap: 20px;">
+        <div id="catalog-container"
+          style="margin-top: 30px; width: 100%; display: flex; flex-direction: column; gap: 20px;">
           <div class="service-loading">
             <div class="spinner"></div>
             <p data-i18n="catalog_loading">Chargement du catalogue...</p>
@@ -493,7 +515,7 @@
   <script>
     // Configuration Stripe
     const stripe = Stripe('pk_test_51TJcrfFLNDdgKlq0Jx7X9JC3yJdYBB1fDzf0yUb048vGMGSZzJqXCVriVRWobvTd8WCzy0sKyxUkstl18ahZ8RQ200tnKDWmNz');
-    
+
     // Démarrage de l'application
     document.addEventListener('DOMContentLoaded', () => {
       App.init();
@@ -501,4 +523,5 @@
     });
   </script>
 </body>
+
 </html>

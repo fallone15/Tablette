@@ -12,34 +12,70 @@ const VoiceAssistant = {
   langCodes: {
     fr: 'fr-FR',
     en: 'en-US',
-    ar: 'ar-MA' // Arabe marocain si dispo, sinon fallback ar-AE
+    ar: 'ar-MA',
+    ary: 'ar-MA'
   },
 
-  // Commandes vocales acceptées par écran
+  // Commandes vocales acceptées par écran avec variantes multilingues (Synonymes)
   commands: {
     global: {
-      retour: () => App.back(),
-      annuler: () => App.cancel(),
-      aide: () => VoiceAssistant.speakCurrentScreen()
+      retour: {
+        keywords: ['retour', 'back', 'رجوع', 'رجع'],
+        action: () => App.back()
+      },
+      annuler: {
+        keywords: ['annuler', 'cancel', 'إلغاء', 'حبس', 'بلاش'],
+        action: () => App.cancel()
+      },
+      aide: {
+        keywords: ['aide', 'help', 'مساعدة', 'عاوني'],
+        action: () => VoiceAssistant.speakCurrentScreen()
+      }
     },
     screens: {
       'welcome': {
-        carte: () => App.goTo('rfid-scan'),
-        nouveau: () => App.goTo('guest-flow'),
-        catalogue: () => App.goTo('catalog')
+        carte: {
+          keywords: ['carte', 'card', 'بطاقة', 'كارط'],
+          action: () => App.goTo('rfid-scan')
+        },
+        nouveau: {
+          keywords: ['nouveau', 'new', 'جديد', 'بلا كارط', 'ما عنديش'],
+          action: () => App.goTo('guest-flow')
+        },
+        catalogue: {
+          keywords: ['catalogue', 'catalog', 'دليل', 'أطباء', 'طبيب'],
+          action: () => App.goTo('catalog')
+        }
       },
       'screen-patient-confirm': {
-        oui: () => ConfirmScreen.yes(),
-        non: () => App.goTo('welcome')
+        oui: {
+          keywords: ['oui', 'yes', 'نعم', 'إيه', 'أنا'],
+          action: () => ConfirmScreen.yes()
+        },
+        non: {
+          keywords: ['non', 'no', 'لا', 'ماشي أنا', 'لا لا'],
+          action: () => App.goTo('welcome')
+        }
       },
       'payment': {
-        carte: () => PaymentScreen.payCB(),
-        espèces: () => PaymentScreen.payCash()
+        carte: {
+          keywords: ['carte', 'card', 'بطاقة', 'بنكية'],
+          action: () => PaymentScreen.payCB()
+        },
+        espèces: {
+          keywords: ['espèces', 'cash', 'نقدا', 'نقداً', 'كاش', 'فلوس'],
+          action: () => PaymentScreen.payCash()
+        }
       },
       'ticket': {
-        imprimer: () => window.print(),
-        accueil: () => App.goTo('welcome'),
-        maison: () => App.goTo('welcome')
+        imprimer: {
+          keywords: ['imprimer', 'print', 'طباعة', 'طبع'],
+          action: () => window.print()
+        },
+        accueil: {
+          keywords: ['accueil', 'home', 'الرئيسية', 'ميزون', 'دار', 'أكوي'],
+          action: () => App.goTo('welcome')
+        }
       }
     }
   },
@@ -173,11 +209,16 @@ const VoiceAssistant = {
     document.getElementById('voice-toggle-btn').classList.add('speaking');
 
     this.currentUtterance = new SpeechSynthesisUtterance(text);
-    this.currentUtterance.lang = this.langCodes[App.state.lang] || 'fr-FR';
+    
+    const targetLang = this.langCodes[App.state.lang] || 'fr-FR';
+    this.currentUtterance.lang = targetLang;
     
     // Essayer de trouver une voix naturelle dans la langue choisie
     const voices = this.synthesis.getVoices();
-    const voice = voices.find(v => v.lang.startsWith(App.state.lang));
+    let voice = voices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase());
+    if (!voice) {
+      voice = voices.find(v => v.lang.toLowerCase().startsWith(targetLang.substring(0, 2).toLowerCase()));
+    }
     if (voice) this.currentUtterance.voice = voice;
 
     this.currentUtterance.onend = () => {
@@ -219,28 +260,28 @@ const VoiceAssistant = {
         text = App.t('rfid_title') + ". " + App.t('rfid_subtitle');
         break;
       case 'pin-entry':
-        text = App.t('pin_title') + ". Veuillez composer vos quatre chiffres sur le clavier numérique.";
+        text = App.t('pin_title') + ". " + (App.state.lang === 'ary' ? "عافاك دخل أربعة د الأرقام ديالك فالكلافي." : App.state.lang === 'ar' ? "يرجى كتابة أرقامك الأربعة على لوحة المفاتيح." : App.state.lang === 'en' ? "Please compose your four digits on the numeric keypad." : "Veuillez composer vos quatre chiffres sur le clavier numérique.");
         break;
       case 'screen-patient-confirm':
         const patientName = document.getElementById('patient-name')?.textContent || "";
-        text = App.t('confirm_title') + " " + patientName + " ? Dites : Oui, ou dites : Non.";
+        text = App.t('confirm_title') + " " + patientName + " ? " + (App.state.lang === 'ary' ? "قول : إيه، ولا قول : لا." : App.state.lang === 'ar' ? "قل : نعم، أو قل : لا." : App.state.lang === 'en' ? "Say: Yes, or say: No." : "Dites : Oui, ou dites : Non.");
         break;
       case 'appointments':
         text = App.t('appts_title') + ". " + App.t('appts_subtitle');
         break;
       case 'payment':
         const amount = document.getElementById('payment-amount')?.textContent || "";
-        text = App.t('payment_title') + ". Le montant est de " + amount + ". Dites : Carte, pour régler par carte bancaire. Ou dites : Espèces, pour payer à l'accueil.";
+        text = App.t('payment_title') + ". " + (App.state.lang === 'ary' ? "الثمن هو " + amount + ". قول : كارط، باش تخلص بالبطاقة البنكية. ولا قول : كاش، باش تخلص فالمكتب د الاستقبال." : App.state.lang === 'ar' ? "المبلغ هو " + amount + ". قل : بطاقة، للدفع بالبطاقة البنكية. أو قل : كاش، للدفع عند الاستقبال." : App.state.lang === 'en' ? "The amount is " + amount + ". Say: Card, to pay by bank card. Or say: Cash, to pay at the reception." : "Le montant est de " + amount + ". Dites : Carte, pour régler par carte bancaire. Ou dites : Espèces, pour payer à l'accueil.");
         break;
       case 'service-select':
         text = App.t('service_title') + ". " + App.t('service_subtitle');
         break;
       case 'guest-flow':
-        text = App.t('guest_title') + ". " + App.t('guest_subtitle1') + ". Veuillez sélectionner une spécialité dans la liste.";
+        text = App.t('guest_title') + ". " + App.t('guest_subtitle1') + ". " + (App.state.lang === 'ary' ? "عافاك عزل التخصص ديالك من الليستة." : App.state.lang === 'ar' ? "يرجى اختيار تخصص من القائمة." : App.state.lang === 'en' ? "Please select a specialty from the list." : "Veuillez sélectionner une spécialité dans la liste.");
         break;
       case 'ticket':
         const num = document.getElementById('ticket-number')?.textContent || "";
-        text = App.t('ticket_success') + ". Votre numéro d'attente est le " + num + ". " + App.t('ticket_msg_1') + " " + App.t('ticket_msg_2');
+        text = App.t('ticket_success') + ". " + (App.state.lang === 'ary' ? "الرقم ديالك هو " + num + ". " : App.state.lang === 'ar' ? "رقمك هو " + num + ". " : App.state.lang === 'en' ? "Your number is " + num + ". " : "Votre numéro d'attente est le " + num + ". ") + App.t('ticket_msg_1') + " " + App.t('ticket_msg_2');
         break;
       case 'catalog':
         text = App.t('catalog_title') + ". " + App.t('catalog_subtitle');
@@ -257,9 +298,9 @@ const VoiceAssistant = {
   // Analyseur de commandes vocales reçues
   handleVoiceCommand(text) {
     // 1. Commandes Globales (Retour, Annuler...)
-    for (const [command, action] of Object.entries(this.commands.global)) {
-      if (text.includes(command)) {
-        action();
+    for (const [key, cmd] of Object.entries(this.commands.global)) {
+      if (cmd.keywords.some(kw => text.includes(kw))) {
+        cmd.action();
         return;
       }
     }
@@ -269,9 +310,9 @@ const VoiceAssistant = {
     const screenCommands = this.commands.screens[currentScreen];
 
     if (screenCommands) {
-      for (const [command, action] of Object.entries(screenCommands)) {
-        if (text.includes(command)) {
-          action();
+      for (const [key, cmd] of Object.entries(screenCommands)) {
+        if (cmd.keywords.some(kw => text.includes(kw))) {
+          cmd.action();
           return;
         }
       }

@@ -147,11 +147,11 @@ const App = {
   },
 
   setLanguage(lang) {
-    if (!['fr', 'en', 'ar'].includes(lang)) lang = 'fr';
+    if (!['fr', 'en', 'ar', 'ary'].includes(lang)) lang = 'fr';
     this.state.lang = lang;
     
-    // Gestion du sens de lecture (RTL pour Arabe)
-    document.body.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+    // Gestion du sens de lecture (RTL pour Arabe / Darija)
+    document.body.dir = (lang === 'ar' || lang === 'ary') ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
     
     // Mise à jour de la classe active sur les boutons de langue
@@ -169,6 +169,16 @@ const App = {
       }
     });
 
+    // Dynamic greeting translation if we are on PIN screen
+    if (this.currentScreen === 'pin-entry' && typeof PinScreen !== 'undefined' && typeof PinScreen.updateGreeting === 'function') {
+      PinScreen.updateGreeting();
+    }
+
+    // Dynamic translation update if we are on Patient Confirm screen
+    if (this.currentScreen === 'patient-confirm' && typeof ConfirmScreen !== 'undefined' && this.state.patient) {
+      ConfirmScreen.populate(this.state.patient);
+    }
+
     this.updateClock(); // Pour rafraîchir la date formatée
     console.log(`🌐 Langue changée pour : ${lang}`);
   },
@@ -180,7 +190,7 @@ const App = {
     const s = String(now.getSeconds()).padStart(2, '0');
     document.getElementById('clock').textContent = `${h}:${m}:${s}`;
 
-    const locales = { fr: 'fr-FR', en: 'en-US', ar: 'ar-MA' };
+    const locales = { fr: 'fr-FR', en: 'en-US', ar: 'ar-MA', ary: 'ar-MA' };
     const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const dateEl = document.getElementById('date-display');
     if (dateEl) {
@@ -283,6 +293,7 @@ const App = {
       lang: this.state.lang, // Garder la langue actuelle avant le setLanguage(fr) de welcome
       rfid: null, patient: null, estVisiteur: false,
       motif: null, serviceChoisi: null, servicePreselectionne: null, ticket: null, rdvChoisi: null,
+      tempPrenom: null,
     };
   },
 

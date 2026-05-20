@@ -184,7 +184,7 @@ const RfidScreen = {
           App.hideLoading();
 
           // Pré-remplir le prénom sur l'écran PIN
-          document.getElementById('pin-prenom').textContent = data.prenom || 'Patient';
+          App.state.tempPrenom = data.prenom || 'Patient';
 
           App.goTo('pin-entry');
         } else {

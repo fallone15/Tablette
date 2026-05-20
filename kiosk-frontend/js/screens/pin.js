@@ -27,10 +27,19 @@ const PinScreen = {
     });
   },
 
+  updateGreeting() {
+    const greetingEl = document.getElementById('pin-greeting');
+    if (greetingEl) {
+      const prenom = App.state.tempPrenom || 'Patient';
+      greetingEl.innerHTML = App.t('pin_hello', { name: prenom });
+    }
+  },
+
   onEnter() {
     // Réinitialiser le compteur à chaque nouvelle session
     this._attempts = 0;
     this.reset();
+    this.updateGreeting();
     document.getElementById('pin-attempts')?.classList.add('hidden');
   },
 
