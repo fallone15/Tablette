@@ -61,7 +61,13 @@ const VoiceAssistant = {
       'payment': {
         carte: {
           keywords: ['carte', 'card', 'بطاقة', 'بنكية'],
-          action: () => PaymentScreen.payCB()
+          action: () => {
+            if (App.state.estVisiteur) {
+              console.log("🚫 Payment by card not allowed for visitors via voice command.");
+              return;
+            }
+            PaymentScreen.payCB();
+          }
         },
         espèces: {
           keywords: ['espèces', 'cash', 'نقدا', 'نقداً', 'كاش', 'فلوس'],
@@ -341,8 +347,9 @@ const VoiceAssistant = {
         break;
       case 'payment': {
         const amount = document.getElementById('payment-amount')?.textContent || "";
-        const fallbackText = (amount ? App.t('payment_amount') + " " + amount + ". " : "") + App.t('voice_guide_payment');
-        this.playAudioOrFallback('voice_guide_payment', fallbackText);
+        const promptKey = App.state.estVisiteur ? 'voice_guide_payment_guest' : 'voice_guide_payment';
+        const fallbackText = (amount ? App.t('payment_amount') + " " + amount + ". " : "") + App.t(promptKey);
+        this.playAudioOrFallback(promptKey, fallbackText);
         break;
       }
       case 'service-select':

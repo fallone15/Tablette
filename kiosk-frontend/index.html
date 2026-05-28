@@ -294,15 +294,24 @@
             <span data-i18n="payment_amount">Montant de la consultation :</span> <strong id="payment-amount"
               style="color:var(--primary);font-size:24px;">— MAD</strong>
           </p>
+          <!-- Bandeau info visiteur (caisse uniquement) -->
+          <div id="payment-guest-notice" class="hidden"
+            style="width:100%;padding:16px 20px;border-radius:var(--radius-md);background:rgba(231,76,60,0.1);border:2px solid var(--danger);text-align:center;margin-top:10px;">
+            <span style="font-size:22px;">🏧</span>
+            <p style="margin:8px 0 0;font-weight:600;color:var(--danger);font-size:16px;" data-i18n="payment_guest_cash_only">
+              En tant que nouveau patient, le paiement se fait uniquement à la caisse.
+            </p>
+          </div>
+
           <div style="display:flex;gap:20px;width:100%;margin-top:20px;">
-            <button class="btn-primary"
+            <button id="pay-cb-btn" class="btn-primary"
               style="flex:1;min-height:140px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;"
               onclick="PaymentScreen.payCB()">
               <span style="font-size:40px;">💳</span>
               <span data-i18n="payment_card">Carte Bancaire</span><br><span style="font-size:13px;font-weight:400;"
                 data-i18n="payment_card_desc">(Sur cette borne)</span>
             </button>
-            <button class="btn-secondary"
+            <button id="pay-cash-btn" class="btn-secondary"
               style="flex:1;min-height:140px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;background:var(--bg-card);border:2px solid var(--warning);color:#fff;cursor:pointer;border-radius:var(--radius-md);"
               onclick="PaymentScreen.payCash()">
               <span style="font-size:40px;">💵</span>

@@ -1,1 +1,4 @@
 .env
+kiosk-frontend\audio
+diag.svg
+.env.example

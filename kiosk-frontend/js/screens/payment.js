@@ -15,6 +15,25 @@ const PaymentScreen = {
     
     const tarif = parseFloat(App.state.serviceChoisi.tarif || 0).toFixed(2);
     amountEl.textContent = `${tarif} MAD`;
+
+    // --- Visiteurs (pas du système) : caisse uniquement ---
+    const cbBtn = document.getElementById('pay-cb-btn');
+    const cashBtn = document.getElementById('pay-cash-btn');
+    const notice = document.getElementById('payment-guest-notice');
+
+    if (App.state.estVisiteur) {
+      // Masquer le bouton CB
+      if (cbBtn) cbBtn.style.display = 'none';
+      // Le bouton caisse prend toute la largeur
+      if (cashBtn) cashBtn.style.flex = '1 1 100%';
+      // Afficher le bandeau d'info
+      if (notice) notice.classList.remove('hidden');
+    } else {
+      // Patient du système : tout afficher
+      if (cbBtn) cbBtn.style.display = '';
+      if (cashBtn) cashBtn.style.flex = '1';
+      if (notice) notice.classList.add('hidden');
+    }
   },
 
   // Initialiser Stripe Elements

@@ -29,6 +29,7 @@ const translations = {
     'voice_guide_confirm': "Veuillez vérifier les informations affichées à l'écran. S'agit-il bien de vous ? Dites oui ou cliquez sur le bouton vert pour confirmer. Sinon, dites non ou cliquez sur le bouton rouge pour annuler.",
     'voice_guide_appts': "Nous avons trouvé vos rendez-vous pour aujourd'hui. Veuillez confirmer votre présence en sélectionnant le rendez-vous concerné, ou cliquez en bas pour choisir un autre motif.",
     'voice_guide_payment': "Comment souhaitez-vous régler votre consultation ? Dites carte ou cliquez sur le bouton pour payer directement par carte sur cette borne. Sinon, dites espèces ou cliquez sur payer à l'accueil pour régler au secrétariat.",
+    'voice_guide_payment_guest': "En tant que nouveau patient, vous devez régler votre consultation à la caisse. Dites espèces ou cliquez sur le bouton pour émettre votre ticket de caisse.",
     'voice_guide_service': "Veuillez sélectionner le service médical ou la spécialité pour votre consultation. Le temps d'attente estimé s'affiche sous chaque bouton.",
     'voice_guide_guest': "Vous avez choisi une prise en charge rapide sans carte. Veuillez sélectionner la spécialité médicale souhaitée dans la liste, puis cliquez sur continuer pour procéder au paiement.",
     'voice_guide_ticket': "Votre enregistrement est réussi ! Votre numéro d'attente s'affiche à l'écran. Veuillez imprimer votre ticket ou prendre une photo, puis installez-vous en salle d'attente. Un soignant vous appellera très bientôt.",
@@ -94,6 +95,7 @@ const translations = {
     'payment_pay': "Payer",
     'payment_cashier_loading': "Émission du ticket Caisse...",
     'error_ticket_cashier': "Impossible de générer le ticket de Caisse.",
+    'payment_guest_cash_only': "En tant que nouveau patient, le paiement se fait uniquement à la caisse.",
 
     // Service Select Screen
     'service_title': "Quel service souhaitez-vous ?",
@@ -183,6 +185,7 @@ const translations = {
     'voice_guide_confirm': "Please verify the information displayed on the screen. Is this you? Say yes or click the green button to confirm. Otherwise, say no or click the red button to cancel.",
     'voice_guide_appts': "We have found your appointments for today. Please confirm your arrival by selecting the correct appointment, or click below to choose another reason.",
     'voice_guide_payment': "How would you like to pay for your consultation? Say card or click the button to pay directly on this kiosk. Otherwise, say cash or click to pay at the reception desk.",
+    'voice_guide_payment_guest': "As a new patient, you must pay for your consultation at the reception desk. Say cash or click the button to issue your cashier ticket.",
     'voice_guide_service': "Please select the medical service or specialty for your consultation. The estimated waiting time is displayed below each button.",
     'voice_guide_guest': "You have chosen a quick check-in without a card. Please select your desired medical specialty from the list, then click continue to proceed to payment.",
     'voice_guide_ticket': "Check-in successful! Your waiting number is displayed on the screen. Please print your ticket or take a picture, then proceed to the waiting room. A medical staff member will call you shortly.",
@@ -243,6 +246,7 @@ const translations = {
     'payment_pay': "Pay",
     'payment_cashier_loading': "Issuing Cashier ticket...",
     'error_ticket_cashier': "Impossible to generate Cashier ticket.",
+    'payment_guest_cash_only': "As a new patient, payment can only be made at the reception desk.",
 
     // Service Select Screen
     'service_title': "Which service do you need ?",
@@ -332,6 +336,7 @@ const translations = {
     'voice_guide_confirm': "يرجى التحقق من المعلومات المعروضة على الشاشة. هل هذه البيانات صحيحة وتخصك؟ قل نعم أو اضغط على الزر الأخضر للتأكيد. وإذا لم تكن بياناتك، قل لا أو اضغط على الزر الأحمر للإلغاء.",
     'voice_guide_appts': "لقد وجدنا مواعيدك المسجلة اليوم. يرجى تأكيد حضورك باختيار الموعد المناسب، أو اضغط في الأسفل لاختيار سبب آخر للزيارة.",
     'voice_guide_payment': "كيف تفضل دفع رسوم الاستشارة الطبية؟ قل بطاقة أو اضغط على الزر للدفع بالبطاقة البنكية مباشرة على هذه الشاشة. أو قل كاش واضغط على الدفع في الاستقبال لإتمام الدفع عند الموظف.",
+    'voice_guide_payment_guest': "بصفتك مريضًا جديدًا، يجب عليك دفع رسوم الاستشارة عند الصندوق. قل كاش أو اضغط على الزر لإصدار تذكرة الصندوق.",
     'voice_guide_service': "يرجى اختيار الخدمة الطبية أو التخصص المطلوب للاستشارة. يظهر وقت الانتظار التقريبي تحت كل زر.",
     'voice_guide_guest': "لقد اخترت التسجيل السريع بدون بطاقة مريض. يرجى اختيار التخصص الطبي المطلوب من القائمة، ثم اضغط على متابعة للانتقال إلى شاشة الدفع.",
     'voice_guide_ticket': "تم التسجيل بنجاح! رقم الانتظار الخاص بك معروض الآن على الشاشة. يرجى طباعة تذكرتك أو التقاط صورة لها، ثم تفضل بالجلوس في قاعة الانتظار. سينادي عليك أحد الممرضين قريباً.",
@@ -396,6 +401,7 @@ const translations = {
     'payment_pay': "دفع",
     'payment_cashier_loading': "إصدار تذكرة الصندوق...",
     'error_ticket_cashier': "تعذر استخراج تذكرة الصندوق.",
+    'payment_guest_cash_only': "بصفتك مريضًا جديدًا، يتم الدفع فقط عند الصندوق (الاستقبال).",
 
     // Service Select Screen
     'service_title': "أي خدمة تحتاج؟",
@@ -485,6 +491,7 @@ const translations = {
     'voice_guide_confirm': "عافاك تأكد من المعلومات اللي ف الشاشة. واش هادا نتا بالصح؟ قول إيه ولا ورك على البوتون الخضر باش تأكد. يلا ماشي نتا، قول لا ولا ورك على البوتون الأحمر باش تلغي العملية.",
     'voice_guide_appts': "لقينا المواعيد ديالك ديال اليوم. عافاك أكد الحضور ديالك وعزل الموعد اللي جيتي عليه، ولا ورك لتحت باش تختار سبب آخر.",
     'voice_guide_payment': "كيفاش بغيتي تخلص الفحص ديالك؟ قول كارط ولا ورك على البوتون باش تخلص بالبطاقة البنكية نيشان فهاد الماكينة. ولا قول كاش وورك على تخلص فالاستقبال باش تخلص تماك عند الموظف.",
+    'voice_guide_payment_guest': "بما أنك مريض جديد، خاصك تخلص الفحص ديالك فالصندوق. قول كاش ولا ورك على البوتون باش تخرج تيكيت الصندوق.",
     'voice_guide_service': "عافاك عزل الخدمة الطبية ولا التخصص اللي محتاج. وقت الانتظار التقريبي راه باين تحت كل بوتون.",
     'voice_guide_guest': "عزلتي تسجيل سريع بلا كارط. عافاك عزل التخصص الطبي اللي بغيتي من الليستة، ومن بعد ورك على المتابعة باش تدوز للخلاص.",
     'voice_guide_ticket': "عملية التسجيل دازت بنجاح! الرقم ديالك راه باين ف الشاشة. عافاك طبع التيكيت ديالك ولا صورها بالتلفون، وتفضل ريح فقاعة الانتظار. الفرملي غادي يعيط عليك دغيا دغيا.",
@@ -549,6 +556,7 @@ const translations = {
     'payment_pay': "خلص",
     'payment_cashier_loading': "جاري إصدار تيكيت الصندوق...",
     'error_ticket_cashier': "ما قدرناش نخرجو تيكيت الصندوق.",
+    'payment_guest_cash_only': "بما أنك مريض جديد، الخلاص كيكون غير فالعساس/الصندوق.",
 
     // Service Select Screen
     'service_title': "شمن خدمة محتاج؟",
