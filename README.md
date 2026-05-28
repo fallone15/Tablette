@@ -1,6 +1,6 @@
 # 📱 Borne d'Accueil Tactile CareTrack (Tablette)
 
-Ce projet correspond à la **Borne d'Accueil Tactile CareTrack** (conçue pour une utilisation sur tablette). Elle permet aux patients de s'enregistrer de manière autonome dans l'établissement de santé, soit par carte RFID (avec code PIN), soit par enregistrement rapide sans carte (Guest). La borne prend en charge le paiement des consultations (en ligne via Stripe ou en espèces au secrétariat), fournit une assistance vocale multilingue interactive, et permet d'imprimer un ticket de passage.
+Ce projet correspond à la **Borne d'Accueil Tactile CareTrack** (conçue pour une utilisation sur tablette). Elle permet aux patients de s'enregistrer de manière autonome dans l'établissement de santé, soit par carte acos3 (avec code PIN), soit par enregistrement rapide sans carte (Guest). La borne prend en charge le paiement des consultations (en ligne via Stripe ou en espèces au secrétariat), fournit une assistance vocale multilingue interactive, et permet d'imprimer un ticket de passage.
 
 L'application est divisée en un **Frontend** moderne (HTML5 / Vanilla CSS / Vanilla JS) et un **Backend** REST & WebSocket (Node.js / Express / PostgreSQL / Python).
 
@@ -23,7 +23,7 @@ Le dépôt [Tablette](file:///d:/Tablette) est structuré comme suit :
 │   │   │   ├── guest.js         # Parcours sans carte (visiteur rapide)
 │   │   │   ├── payment.js       # Choix du moyen de paiement (Stripe / Espèces)
 │   │   │   ├── pin.js           # Pavé numérique et validation de code PIN
-│   │   │   ├── rfid.js          # Attente de scan de carte RFID
+│   │   │   ├── acos3.js          # Attente de scan de carte acos3
 │   │   │   ├── services.js      # Grille des spécialités & temps d'attente
 │   │   │   └── ticket.js        # Affichage, QR et impression du ticket final
 │   │   ├── api.js           # Client API (fetch vers le backend)
@@ -36,7 +36,7 @@ Le dépôt [Tablette](file:///d:/Tablette) est structuré comme suit :
 │
 ├── kiosk-backend/           # Serveur de la borne (Serveur)
 │   ├── routes/              # Endpoints API Express
-│   │   ├── auth.js          # Authentification RFID + Code PIN
+│   │   ├── auth.js          # Authentification acos3 + Code PIN
 │   │   ├── kiosk.js         # Logique métier, tickets, et affectation médecins
 │   │   ├── payment.js       # Création & confirmation de paiement Stripe
 │   │   └── services.js      # Listes des spécialités et catalogue
@@ -57,7 +57,7 @@ Le dépôt [Tablette](file:///d:/Tablette) est structuré comme suit :
 
 ## 🌟 Fonctionnalités Clés
 
-### 1. 💳 Identification Hybride (RFID & Code PIN)
+### 1. 💳 Identification Hybride (acos3 & Code PIN)
 - **Lecteur de cartes PC/SC** : Le script [cardReader.py](file:///d:/Tablette/kiosk-backend/services/cardReader.py) écoute en arrière-plan les lecteurs de cartes à puce (ex: Thales/Gemalto) à contact ISO 7816 ou NFC.
 - **Support des cartes ACOS3** : Lecture du fichier sécurisé `A0A0` pour extraire l'ID du patient (ex: `PAT9660`). En cas de carte standard, le système bascule sur la lecture de l'UID matériel brut.
 - **Saisie de code PIN** : Un pavé numérique tactile sécurisé ([pin.js](file:///d:/Tablette/kiosk-frontend/js/screens/pin.js)) permet au patient de s'authentifier à l'aide de son PIN haché en base de données avec `bcryptjs`.
@@ -115,7 +115,7 @@ La borne d'accueil utilise la même base de données PostgreSQL `hospital` que l
    node migrate_codes.js
    ```
 
-### 3. Dépendances du Lecteur RFID (Python)
+### 3. Dépendances du Lecteur acos3 (Python)
 Le moniteur de carte s'appuie sur la bibliothèque Python `pyscard` pour dialoguer avec l'API Windows Smart Card (WinSCard).
 - Installez la dépendance :
   ```bash
