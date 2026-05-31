@@ -48,7 +48,7 @@ const ConfirmScreen = {
     const avatarEl = document.getElementById('patient-avatar');
 
     if (patient.photo_url) {
-      photoEl.src = `http://localhost:3000/uploads/${patient.photo_url}`;
+      photoEl.src = `http://${window.location.hostname}:3000/uploads/${patient.photo_url}`;
       photoEl.classList.remove('hidden');
       avatarEl.classList.add('hidden');
       photoEl.onerror = () => {

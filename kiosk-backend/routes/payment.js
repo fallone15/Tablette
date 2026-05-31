@@ -198,7 +198,7 @@ router.post('/confirm', async (req, res) => {
           id_service, id_medecin, id_salle,
           numero_file, heure_arrivee, heure_estimee,
           statut, motif, montant_paye, mode_paiement
-        ) VALUES ($1, $2, $3, $4, NOW(), $5, 'en_cours', $6, $7, 'stripe')
+        ) VALUES ($1, $2, $3, $4, NOW(), $5, 'en_attente', $6, $7, 'stripe')
         RETURNING *
       `, [
         id_service, medecin.id_medecin, salleId,
@@ -210,11 +210,11 @@ router.post('/confirm', async (req, res) => {
           id_patient, id_service, id_medecin, id_salle,
           numero_file, heure_arrivee, heure_estimee,
           statut, motif, montant_paye, mode_paiement
-        ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, 'en_cours', $7, $8, 'stripe')
+        ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, 'en_attente', $7, $8, $9)
         RETURNING *
       `, [
         id_patient || null, id_service, medecin.id_medecin, salleId,
-        numeroFile, heureEstimee, final_motif, service.tarif
+        numeroFile, heureEstimee, final_motif, service.tarif, 'stripe'
       ]);
     }
 

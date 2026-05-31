@@ -110,7 +110,7 @@ router.get('/appointments/:id_patient', async (req, res) => {
       JOIN public.services s ON m.id_service = s.id_service
       WHERE r.patient_id = $1
         AND r.date_rdv = CURRENT_DATE
-        AND r.statut IN ('confirme', 'en_attente')
+        AND r.statut IN ('confirme', 'en_attente', 'en_attente_paiement')
       ORDER BY r.heure_rdv ASC
     `, [id_patient]);
 
@@ -249,8 +249,9 @@ router.post('/checkin', async (req, res) => {
     let numeroFile;
     let tentatives = 0;
     
-    // 🚀 REDIRECTION CAISSE : Si paiement en espèces, tout va dans la table TICKETS
-    const goesToTickets = est_visiteur || normalizedModePaiement === 'especes';
+    // 🚀 REDIRECTION CAISSE : Seuls les vrais visiteurs (sans compte) vont dans TICKETS
+    // Un patient enregistré (avec id_patient) va toujours dans CONSULTATIONS, quel que soit le mode de paiement
+    const goesToTickets = est_visiteur && !patient_id;
     
     // Générer le numéro de ticket séquentiel (ex: GYN-1)
     numeroFile = await generateServiceTicketNumber(id_service);
@@ -291,6 +292,11 @@ router.post('/checkin', async (req, res) => {
       ]);
     }
 
+    // Mettre à jour le statut du RDV si présent pour éviter les doubles check-ins
+    if (id_rendez_vous) {
+      await pool.query('UPDATE public.rendez_vous SET statut = \'confirme\', updated_at = CURRENT_TIMESTAMP WHERE id = $1', [id_rendez_vous]);
+    }
+
     const positionRes = await pool.query(`
       SELECT (
         (SELECT COUNT(*) FROM public.consultations WHERE id_medecin = $1 AND statut = 'en_attente' AND DATE(heure_arrivee) = CURRENT_DATE AND id_consultation <= $2)
@@ -298,11 +304,6 @@ router.post('/checkin', async (req, res) => {
         (SELECT COUNT(*) FROM public.tickets WHERE id_medecin = $1 AND statut = 'en_attente' AND DATE(heure_arrivee) = CURRENT_DATE AND id <= $2)
       ) AS position
     `, [medecin.id_medecin, insertionResult.rows[0].id || insertionResult.rows[0].id_consultation]);
-
-    // Mettre à jour le statut du RDV si présent pour éviter les doubles check-ins
-    if (id_rendez_vous) {
-      await pool.query('UPDATE public.rendez_vous SET statut = \'confirme\' WHERE id = $1', [id_rendez_vous]);
-    }
 
     res.json({
       success: true,
@@ -331,7 +332,7 @@ router.post('/checkin', async (req, res) => {
  * Génère un ticket de caisse pour ceux devant régler en espèces.
  */
 router.post('/cashier-ticket', async (req, res) => {
-    const { id_service, id_patient, carte_rfid } = req.body;
+    const { id_service, id_patient, carte_rfid, id_rendez_vous } = req.body;
     
     if (!id_service) {
       return res.status(400).json({ error: 'Service requis pour ticket de caisse' });
@@ -352,6 +353,14 @@ router.post('/cashier-ticket', async (req, res) => {
         INSERT INTO public.tickets (numero_file, id_service, statut, type_client, id_patient, motif)
         VALUES ($1, $2, 'en_attente', $3, $4, $5)
       `, [numeroFile, id_service, typeClient, id_patient || null, service.nom]);
+
+      // ✅ Mettre à jour le statut du RDV associé → 'confirme' (paiement validé à la caisse)
+      if (id_rendez_vous) {
+        await pool.query(
+          'UPDATE public.rendez_vous SET statut = \'confirme\', updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+          [id_rendez_vous]
+        );
+      }
 
     res.json({
       success: true,
