@@ -188,35 +188,28 @@ router.post('/confirm', async (req, res) => {
     `, [id_service]);
     const salleId = salleRes.rows[0]?.id_salle || null;
 
-    // Créer la consultation ou le ticket
-    let insertionResult;
+    // Créer le ticket
     const final_motif = motif || (est_visiteur ? 'Consultation (borne d\'accueil - Visiteur)' : 'Consultation (borne d\'accueil)');
+    const typeClient = est_visiteur ? 'GUEST' : 'PATIENT';
     
-    if (est_visiteur) {
-      insertionResult = await pool.query(`
-        INSERT INTO public.tickets (
-          id_service, id_medecin, id_salle,
-          numero_file, heure_arrivee, heure_estimee,
-          statut, motif, montant_paye, mode_paiement
-        ) VALUES ($1, $2, $3, $4, NOW(), $5, 'en_attente', $6, $7, 'stripe')
-        RETURNING *
-      `, [
-        id_service, medecin.id_medecin, salleId,
-        numeroFile, heureEstimee, final_motif, service.tarif
-      ]);
-    } else {
-      insertionResult = await pool.query(`
-        INSERT INTO public.consultations (
-          id_patient, id_service, id_medecin, id_salle,
-          numero_file, heure_arrivee, heure_estimee,
-          statut, motif, montant_paye, mode_paiement
-        ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, 'en_attente', $7, $8, $9)
-        RETURNING *
-      `, [
-        id_patient || null, id_service, medecin.id_medecin, salleId,
-        numeroFile, heureEstimee, final_motif, service.tarif, 'stripe'
-      ]);
-    }
+    const insertionResult = await pool.query(`
+      INSERT INTO public.tickets (
+        id_patient, id_service, id_medecin, id_salle,
+        numero_file, heure_arrivee, heure_estimee,
+        statut, motif, montant_paye, mode_paiement, type_client
+      ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, 'en_attente', $7, $8, 'stripe', $9)
+      RETURNING *
+    `, [
+      est_visiteur ? null : (id_patient || null),
+      id_service,
+      medecin.id_medecin,
+      salleId,
+      numeroFile,
+      heureEstimee,
+      final_motif,
+      service.tarif,
+      typeClient
+    ]);
 
     const consultData = insertionResult.rows[0];
 

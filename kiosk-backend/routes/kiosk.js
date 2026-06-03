@@ -249,10 +249,6 @@ router.post('/checkin', async (req, res) => {
     let numeroFile;
     let tentatives = 0;
     
-    // 🚀 REDIRECTION CAISSE : Seuls les vrais visiteurs (sans compte) vont dans TICKETS
-    // Un patient enregistré (avec id_patient) va toujours dans CONSULTATIONS, quel que soit le mode de paiement
-    const goesToTickets = est_visiteur && !patient_id;
-    
     // Générer le numéro de ticket séquentiel (ex: GYN-1)
     numeroFile = await generateServiceTicketNumber(id_service);
 
@@ -260,37 +256,29 @@ router.post('/checkin', async (req, res) => {
     const patient_info = (!est_visiteur && patient_id) ? `(Patient ID: ${patient_id}) ` : '';
     const final_motif = motif ? (prefix_motif + patient_info + motif) : (prefix_motif + patient_info + (est_visiteur ? 'Passage borne (visiteur)' : 'Passage borne'));
 
-    let insertionResult;
-    if (goesToTickets) {
-      // Insertion dans la table TICKETS (pour Guest ou Patient payant en espèces)
-      insertionResult = await pool.query(`
-        INSERT INTO public.tickets (
-          id_service, id_medecin, id_salle,
-          numero_file, heure_arrivee, heure_estimee,
-          statut, motif, montant_paye, mode_paiement, type_client
-        ) VALUES ($1, $2, $3, $4, NOW(), $5, 'en_attente', $6, $7, $8, $9)
-        RETURNING *
-      `, [
-        id_service, medecin ? medecin.id_medecin : null, salle ? salle.id_salle : null,
-        numeroFile, heureEstimee, final_motif, 
-        (normalizedModePaiement === 'especes' ? null : service.tarif), // Nul si espèces
-        normalizedModePaiement,
-        est_visiteur ? 'GUEST' : (req.body.carte_rfid || 'PATIENT') // Stocker le numéro RFID
-      ]);
-    } else {
-      // Insertion classique dans CONSULTATIONS (Payé en ligne ou déjà payé)
-      insertionResult = await pool.query(`
-        INSERT INTO public.consultations (
-          id_patient, id_service, id_medecin, id_salle,
-          numero_file, heure_arrivee, heure_estimee,
-          statut, motif, montant_paye, mode_paiement
-        ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, 'en_attente', $7, $8, $9)
-        RETURNING *
-      `, [
-        patient_id, id_service, medecin.id_medecin, salle ? salle.id_salle : null,
-        numeroFile, heureEstimee, final_motif, service.tarif, normalizedModePaiement
-      ]);
-    }
+    // Toujours insérer dans la table TICKETS
+    const typeClient = est_visiteur ? 'GUEST' : (req.body.carte_rfid || 'PATIENT');
+    const montantPaye = (normalizedModePaiement === 'especes' ? null : service.tarif);
+
+    const insertionResult = await pool.query(`
+      INSERT INTO public.tickets (
+        id_patient, id_service, id_medecin, id_salle,
+        numero_file, heure_arrivee, heure_estimee,
+        statut, motif, montant_paye, mode_paiement, type_client
+      ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, 'en_attente', $7, $8, $9, $10)
+      RETURNING *
+    `, [
+      est_visiteur ? null : patient_id,
+      id_service,
+      medecin ? medecin.id_medecin : null,
+      salle ? salle.id_salle : null,
+      numeroFile,
+      heureEstimee,
+      final_motif,
+      montantPaye,
+      normalizedModePaiement,
+      typeClient
+    ]);
 
     // Mettre à jour le statut du RDV si présent pour éviter les doubles check-ins
     if (id_rendez_vous) {
