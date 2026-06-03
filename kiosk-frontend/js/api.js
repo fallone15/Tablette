@@ -1,8 +1,16 @@
 /* ─── api.js — Couche d'appel HTTP vers le backend kiosk ─── */
 
-const hostname = window.location.hostname;
-const API_BASE = `http://${hostname}:3001/api/kiosk`;
-const API_PAYMENT = `http://${hostname}:3001/api/payment`;
+const RASPBERRY_PI_IP = '172.17.129.173';
+const hostname = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+  ? window.location.hostname
+  : RASPBERRY_PI_IP;
+
+const API_BASE = (window.location.protocol === 'file:')
+  ? `http://${hostname}:3001/api/kiosk`
+  : '/api/kiosk';
+const API_PAYMENT = (window.location.protocol === 'file:')
+  ? `http://${hostname}:3001/api/payment`
+  : '/api/payment';
 
 const Api = {
 

@@ -67,7 +67,9 @@ const RfidScreen = {
     }
 
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    const host = location.hostname || 'localhost';
+    const host = (location.hostname && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1')
+      ? location.hostname
+      : '172.17.129.173';
     const port = 3001;
     const wsUrl = `${proto}://${host}:${port}/ws/card`;
 
