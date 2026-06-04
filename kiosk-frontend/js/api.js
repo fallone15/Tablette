@@ -1,6 +1,6 @@
 /* ─── api.js — Couche d'appel HTTP vers le backend kiosk ─── */
 
-const RASPBERRY_PI_IP = '172.17.129.173';
+const RASPBERRY_PI_IP = '172.16.84.81';
 const hostname = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
   ? window.location.hostname
   : RASPBERRY_PI_IP;

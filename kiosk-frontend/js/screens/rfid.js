@@ -62,14 +62,14 @@ const RfidScreen = {
 
   _connectCardWebSocket() {
     if (this._ws) {
-      try { this._ws.close(); } catch(e) {}
+      try { this._ws.close(); } catch (e) { }
       this._ws = null;
     }
 
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     const host = (location.hostname && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1')
       ? location.hostname
-      : '172.17.129.173';
+      : '172.16.84.81';
     const port = 3001;
     const wsUrl = `${proto}://${host}:${port}/ws/card`;
 
@@ -88,7 +88,7 @@ const RfidScreen = {
 
     this._ws.onmessage = (event) => {
       let msg;
-      try { msg = JSON.parse(event.data); } catch(e) { return; }
+      try { msg = JSON.parse(event.data); } catch (e) { return; }
 
       console.log('[CardReader WS]', msg);
 
@@ -96,7 +96,7 @@ const RfidScreen = {
         this._setReaderStatus('ready');
       }
 
-    if (msg.type === 'card_inserted') {
+      if (msg.type === 'card_inserted') {
         if (msg.cardId) {
           const input = document.getElementById('rfid-input');
           input.value = msg.cardId;
@@ -142,10 +142,10 @@ const RfidScreen = {
     const subtitle = document.querySelector('.rfid-subtitle');
 
     const states = {
-      ready:        { icon: '📶', text: 'Insérez votre carte ACOS dans le lecteur Gemalto' },
-      reading:      { icon: '⏳', text: 'Lecture en cours...' },
+      ready: { icon: '📶', text: 'Insérez votre carte ACOS dans le lecteur Gemalto' },
+      reading: { icon: '⏳', text: 'Lecture en cours...' },
       disconnected: { icon: '🔌', text: 'Lecteur absent — saisie manuelle disponible' },
-      error:        { icon: '❌', text: 'Impossible de lire la carte — vérifiez le lecteur' },
+      error: { icon: '❌', text: 'Impossible de lire la carte — vérifiez le lecteur' },
     };
 
     const s = states[status] || states.ready;
